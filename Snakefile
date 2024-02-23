@@ -10,7 +10,7 @@ rule all:
 
 rule download_reference_proteome:
     output:
-        "data/fasta/Homo_sapiens.GRCh38.pep.all.fa")
+        "data/fasta/Homo_sapiens.GRCh38.pep.all.fa"
     shell:
         "mkdir -p data/fasta ; "
         "wget " + Ensembl_FTP_URL + "fasta/homo_sapiens/pep/Homo_sapiens.GRCh38.pep.all.fa.gz -O {output}.gz && gunzip {output}.gz; "
@@ -47,7 +47,7 @@ rule annotate_peptides:
             haplo_db=expand('{proxy}', proxy=[config['haplo_db_table']] if len(config["haplo_db_table"]) > 0 else []),
             annot_db="data/gtf/" + annotationFilename + ".db",
             fasta_file=config['full_fasta'],
-            ref_fasta=config['ProHap_data_dir'] + '/fasta/ensembl_reference_proteinDB_' + str(config['ensembl_release']) + '_tagged.fa'
+            ref_fasta='data/fasta/ensembl_reference_proteinDB_' + str(config['ensembl_release']) + '_tagged.fa'
     output:
             config['output_file']
     params:
