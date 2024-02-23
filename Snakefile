@@ -17,9 +17,9 @@ rule download_reference_proteome:
 
 rule reference_fix_headers:
     input:
-        config['ProHap_data_dir'] + "/fasta/Homo_sapiens.GRCh38.pep.all.fa"
+        "data/fasta/Homo_sapiens.GRCh38.pep.all.fa"
     output:
-        config['ProHap_data_dir'] + "/fasta/ensembl_reference_proteinDB_" + str(config['ensembl_release']) + "_tagged.fa"
+        "data/fasta/ensembl_reference_proteinDB_" + str(config['ensembl_release']) + "_tagged.fa"
     conda: "condaenv.yaml"
     shell:
         "python3 src/fix_headers.py -i {input} -o {output} -t _ensref -use_ENST 1 "
