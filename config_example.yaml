@@ -1,6 +1,3 @@
-# Path (relative or absolute) to the data directory of the ProHap / ProVar pipeline
-ProHap_data_dir: "../data"
-
 # Number of the ensembl release used
 ensembl_release: 110
 

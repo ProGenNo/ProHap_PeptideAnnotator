@@ -10,32 +10,32 @@ rule all:
 
 rule download_reference_proteome:
     output:
-        temp(config['ProHap_data_dir'] + "/fasta/Homo_sapiens.GRCh38.pep.all.fa")
+        "data/fasta/Homo_sapiens.GRCh38.pep.all.fa")
     shell:
         "mkdir -p data/fasta ; "
         "wget " + Ensembl_FTP_URL + "fasta/homo_sapiens/pep/Homo_sapiens.GRCh38.pep.all.fa.gz -O {output}.gz && gunzip {output}.gz; "
 
 rule reference_fix_headers:
     input:
-        config['ProHap_data_dir'] + "/fasta/Homo_sapiens.GRCh38.pep.all.fa"
+        "data/fasta/Homo_sapiens.GRCh38.pep.all.fa"
     output:
-        config['ProHap_data_dir'] + "/fasta/ensembl_reference_proteinDB_" + str(config['ensembl_release']) + "_tagged.fa"
+        "data/fasta/ensembl_reference_proteinDB_" + str(config['ensembl_release']) + "_tagged.fa"
     conda: "condaenv.yaml"
     shell:
         "python src/fix_headers.py -i {input} -o {output} -t _ensref "
 
 rule download_gtf:
     output:
-        temp(config['ProHap_data_dir'] + "/gtf/" + annotationFilename + ".gtf")
+        temp("data/gtf/" + annotationFilename + ".gtf")
     shell:
         "mkdir -p data/gtf ; "
         "wget " + Ensembl_FTP_URL + "gtf/homo_sapiens/" + annotationFilename + ".gtf.gz -O {output}.gz && gunzip {output}.gz; "
 
 rule parse_gtf_whole:
     input:
-        config['ProHap_data_dir'] + "/gtf/" + annotationFilename + ".gtf"
+        "data/gtf/" + annotationFilename + ".gtf"
     output:
-        config['ProHap_data_dir'] + "/gtf/" + annotationFilename + ".db"
+        "data/gtf/" + annotationFilename + ".db"
     conda: "condaenv.yaml"
     shell:
         "python src/parse_gtf.py -i {input} -o {output}"
@@ -45,7 +45,7 @@ rule annotate_peptides:
             pep=config['peptides_file'],
             var_db=expand('{proxy}', proxy=[config['var_db_table']] if len(config["var_db_table"]) > 0 else []),
             haplo_db=expand('{proxy}', proxy=[config['haplo_db_table']] if len(config["haplo_db_table"]) > 0 else []),
-            annot_db=config['ProHap_data_dir'] + "/gtf/" + annotationFilename + ".db",
+            annot_db="data/gtf/" + annotationFilename + ".db",
             fasta_file=config['full_fasta'],
             ref_fasta=config['ProHap_data_dir'] + '/fasta/ensembl_reference_proteinDB_' + str(config['ensembl_release']) + '_tagged.fa'
     output:
