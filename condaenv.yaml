@@ -1,0 +1,16 @@
+name: ProHap-PeptideAnnot
+channels:
+  - bioconda
+  - conda-forge
+  - anaconda
+dependencies:
+  - python=3.10
+  - numpy
+  - gffutils
+  - pip
+  - pip:
+    - pandas
+    - argparse
+    - tqdm
+    - datetime
+    - pyarrow
