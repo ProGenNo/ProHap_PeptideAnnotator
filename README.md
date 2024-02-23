@@ -10,7 +10,7 @@ Examples of input files and configuration can be found along with the annotation
 1. Provide your PSMs or peptides in a tab-separated file having the following four columns (additional columns do not matter):
     - `ID`: Unique identifier for the PSM / peptide
     - `Sequence`: Amino acid sequence of the peptide
-    - `Proteins`: List of protein accessions matching the concatenated FASTA file (e.g., `prot_123ab`), separated by semicolon
+    - `Proteins`: List of protein accessions matching the concatenated FASTA file prom ProHap (e.g., `prot_123ab`), separated by semicolon
     - `Positions`: Positions of the first amino acid within the proteins above \(indexed from 0\), separated by semicolon
 3. Create a new configuration file based on the example in _[config_example.yaml](https://github.com/ProGenNo/ProHap/blob/main/peptide_annotation/config_example.yaml)_.
 4. Provide the path to the configuration file on line 2 of _Snakefile_.
