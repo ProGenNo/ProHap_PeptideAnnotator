@@ -52,7 +52,8 @@ with Pool(args.threads) as p:
 
     for index,row in diann_df.iterrows():
         pept_mapped = pep_map.loc[row['Stripped.Sequence']]
-        result_data.append(['row_' + str(index), row['Stripped.Sequence'], pept_mapped['proteins'], pept_mapped['positions']])
+        if (len(pept_mapped['proteins']) > 0):
+            result_data.append(['row_' + str(index), row['Stripped.Sequence'], pept_mapped['proteins'], pept_mapped['positions']])
 
     result_df = pd.DataFrame(data=result_data, columns=['ID', 'Sequence', 'Proteins', 'Positions'])
     result_df.to_csv(args.output_file, header=True, index=False, sep='\t')
