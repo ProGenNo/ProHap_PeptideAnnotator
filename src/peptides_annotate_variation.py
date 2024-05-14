@@ -258,7 +258,7 @@ def process_row(index):
                 dna_alleles.append(';'.join(transcript_alleles))
         dna_alleles = list(dict.fromkeys(dna_alleles))
 
-        return [row['ID'], row['Sequence'], 'canonical', pep_type2, '', '', '|'.join(dna_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), '-', '-']
+        return [row['ID'], row['Sequence'], 'canonical', pep_type2, '-', '-', '|'.join(dna_alleles) if (len(dna_alleles) > 0) else '-', ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), '-', '-']
 
     # Here, the peptide doesn't match to any canonical (ENST*) sequence -> annotate variation
     matching_pep_changes = []           # all unique matching changes with coordinated mapped to this peptide
