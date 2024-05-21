@@ -2,7 +2,8 @@
 # returns an object containing all the proteins + metadata in the fasta file,  
 # accessed by the stable protein ID or accession in case of artificial identifier
 # all_proteins[proteinID] = {'tag': tag, 'accession': accession, 'description': description, 'sequence': sequence}
-def read_fasta(filename):
+# if fasta headers are stored in a separate file, provide the data frame with the headers as the second argument, with the protein accession as index
+def read_fasta(filename, headers=None):
     proteinDB_file = open(filename, 'r')
 
     # read protein db
@@ -44,24 +45,31 @@ def read_fasta(filename):
             accession = metadata[1:-1].split(" ")[0]
             if " " in metadata:
                 description = metadata.split(" ", 1)[1]
+            if (headers is not None):
+                tag = headers.loc[accession]['tag']
 
         proteinID = accession.split('.')[0]
 
         matching_proteins = []
-        matching_sequences = []
         seq_positions = []
         reading_frames = []
 
         if 'position_within_protein:' in description:
             seq_positions = [ int(pos) for pos in description.split('position_within_protein:', 1)[1].split(' ', 1)[0].split(';') ]
+        elif (headers is not None):
+            seq_positions = [ int(pos) for pos in headers.loc[accession]['position_within_protein'].split(';') ]
 
         if 'matching_proteins:' in description:
             proteinLists = description.split('matching_proteins:', 1)[1].split(' ', 1)[0].split(';')
             matching_proteins = [ l.split(',') for l in proteinLists ]
+        elif (headers is not None):
+            matching_proteins = [ l.split(',') for l in headers.loc[accession]['matching_proteins'].split(';') ]
 
         if 'reading_frame:' in description:
             rfLists = description.split('reading_frame:', 1)[1].split(maxsplit=1)[0].split(';')
             reading_frames = [ l.split(',') for l in rfLists ]
+        elif (headers is not None):
+            reading_frames = [ l.split(',') for l in headers.loc[accession]['reading_frame'].split(';') ]
 
         all_proteins[proteinID] = {'tag': tag, 'accession': accession, 'description': description.replace('\n', ''), 'sequence': sequence, 'seq_positions': seq_positions, 'matching_proteins': matching_proteins, 'reading_frames': reading_frames}
 

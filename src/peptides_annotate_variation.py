@@ -42,15 +42,25 @@ parser.add_argument("-ref_fa", dest="ref_fasta", required=True,
                     help="reference proteome (Ensembl) fasta file")                    
 
 parser.add_argument("-f", dest="fasta_file", required=True,
-                    help="fasta file")                    
+                    help="fasta file")                
+
+parser.add_argument("-fh", dest="fasta_header", required=False,
+                    help="fasta header file (optional)")      
 
 parser.add_argument("-log", dest="log_file", required=True,
                     help="output log file")                    
 
 args = parser.parse_args()
 
-print ("Reading", args.fasta_file)
-fasta_entries = read_fasta(args.fasta_file)
+if (args.fasta_header):
+    print ("Reading", args.fasta_header)
+    fasta_header = pd.read_table(args.fasta_header)
+    fasta_header.set_index('accession', inplace=True)
+    print ("Reading", args.fasta_file)
+    fasta_entries = read_fasta(args.fasta_file, fasta_header)
+else:
+    print ("Reading", args.fasta_file)
+    fasta_entries = read_fasta(args.fasta_file)
 
 print ("Reading", args.ref_fasta)
 ref_proteins = read_fasta(args.ref_fasta)
@@ -274,7 +284,10 @@ def process_row(index):
     found_variant = False
 
     for i,protID in enumerate(matching_proteins):
-        reading_frame = int(reading_frames[i])
+        try:
+            reading_frame = int(reading_frames[i])
+        except:
+            print(protID, row['ID'])
 
         # check for proteins that were added manually and don't have associated metadata
         # assume these are variants -> report protein ID as the protein change, DNA change unknown
