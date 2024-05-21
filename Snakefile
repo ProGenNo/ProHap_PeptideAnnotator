@@ -47,6 +47,7 @@ rule annotate_peptides:
             haplo_db=expand('{proxy}', proxy=[config['haplo_db_table']] if len(config["haplo_db_table"]) > 0 else []),
             annot_db="data/gtf/" + annotationFilename + ".db",
             fasta_file=config['full_fasta'],
+            fasta_header=expand('{proxy}', proxy=[config['fasta_header']] if len(config["fasta_header"]) > 0 else []),
             ref_fasta='data/fasta/ensembl_reference_proteinDB_' + str(config['ensembl_release']) + '_tagged.fa'
     output:
             config['output_file']
@@ -54,11 +55,12 @@ rule annotate_peptides:
             variant_prefix="var_",
             haplotype_prefix="haplo_",
             max_cores=config['max_cores'],
-            log_file="annotation_log.txt"
+            log_file="annotation_log.txt",
+            header_arg=("-fh " + config['fasta_header']) if len(config["fasta_header"]) else ""
     threads: config['max_cores']
     conda: "condaenv.yaml"
     shell:
             "python src/peptides_annotate_variation.py -i {input.pep} " +
             ("-var_tsv {input.var_db} -var_prefix {params.variant_prefix} " if (len(config["var_db_table"]) > 0) else "") +
             ("-hap_tsv {input.haplo_db} -hap_prefix {params.haplotype_prefix} " if (len(config["haplo_db_table"]) > 0) else "") +
-            "-log {params.log_file} -ens_annot {input.annot_db} -f {input.fasta_file} -ref_fa {input.ref_fasta} -t {params.max_cores} -o {output}; "
+            "-log {params.log_file} -ens_annot {input.annot_db} -f {input.fasta_file} {params.header_arg} -ref_fa {input.ref_fasta} -t {params.max_cores} -o {output}; "
