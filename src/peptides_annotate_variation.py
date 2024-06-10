@@ -147,7 +147,7 @@ log_file = open(args.log_file, 'a')
 log_file.write('------------' + '[' + datetime.now().strftime('%X %x') + '] file: ' + args.input_file + ':' + '------------\n')
 
 summary_data = []
-summary_columns = ['ID', 'sequence', 'pep_type1', 'pep_type2', 'covered_changes_peptide', 'covered_changes_protein', 'covered_alleles_dna', 'matching_proteins', 'matching_transcripts', 'matching_genes', 'positions_in_proteins', 'preceding_indel_shift', 'reading_frames']
+summary_columns = ['ID', 'sequence', 'pep_type1', 'pep_type2', 'covered_changes_peptide', 'covered_changes_protein', 'covered_alleles_dna', 'matching_proteins', 'matching_transcripts', 'matching_genes', 'positions_in_proteins', 'preceding_indel_shift', 'reading_frames', 'expected_maximum_frequency']
 
 print ("Annotating peptides:")
 
@@ -209,7 +209,7 @@ def process_row(index):
     # crap match = any matching sequence is a contaminant
     is_contaminant = any([ 'cont' in fasta_entries[fastaID]['tag'] for fastaID in fasta_accessions ])
     if is_contaminant:
-        return [row['ID'], row['Sequence'], 'contaminant', 'contaminant', '-', '-', '-', '-', '-', '-', '-', '-', '-']
+        return [row['ID'], row['Sequence'], 'contaminant', 'contaminant', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-']
 
     # concentrate all matching proteins (haplotype or stable protein ids)
     matching_proteins = []
@@ -268,13 +268,14 @@ def process_row(index):
                 dna_alleles.append(';'.join(transcript_alleles))
         dna_alleles = list(dict.fromkeys(dna_alleles))
 
-        return [row['ID'], row['Sequence'], 'canonical', pep_type2, '-', '-', '|'.join(dna_alleles) if (len(dna_alleles) > 0) else '-', ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), '-', '-']
+        return [row['ID'], row['Sequence'], 'canonical', pep_type2, '-', '-', '|'.join(dna_alleles) if (len(dna_alleles) > 0) else '-', ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), '-', '-', '-']
 
     # Here, the peptide doesn't match to any canonical (ENST*) sequence -> annotate variation
     matching_pep_changes = []           # all unique matching changes with coordinated mapped to this peptide
     matching_protein_changes = []       # all unique matching changes in the protein
     matching_DNA_alleles = []           # corresponding unique matches to changes in the DNA
     all_preceding_indels = []               # shift of the peptide compared to the reference sequence due to preceding indels
+    all_haplo_frequencies = {}              # the maximum expected frequency of this peptide - only relevant for haplotypes
     min_changes_found = 999999          # minimum number of found co-occurring changes (to derive the peptide type)
     has_frameshift = False              # one of the matching regions occurs after a frameshift variant
     has_canonical_alternative = False   # when all amino acid changes are reverted, the peptide matches a canonical sequence
@@ -367,6 +368,12 @@ def process_row(index):
             # Remember the transcript ID for this haplotype
             if parent_transcript not in matching_transcripts:
                 matching_transcripts.append(parent_transcript)
+                
+            # Remember the haplotype frequency
+            if parent_transcript in all_haplo_frequencies:
+                all_haplo_frequencies[parent_transcript].append(haplotype['frequency'])
+            else:
+                all_haplo_frequencies[parent_transcript] = [haplotype['frequency']]
 
             # Peptide location within the haplotype sequence, accounting for the offset of the start codon (if known, first M will be at position 0)
             pep_loc = [matching_protein_positions[i] - protein_start, matching_protein_positions[i] - protein_start + peptide_length]
@@ -455,6 +462,9 @@ def process_row(index):
 
     # Check if we have found any alternative alleles. If not, set the alleles counter to 0.
     has_alt_allele = any([ ('>' in alleles_str) for alleles_str in matching_DNA_alleles ])
+    
+    # Maximum haplotype frequency
+    expected_max_freq = max([ sum(freqs) for freqs in all_haplo_frequencies.values() ]) if len(all_haplo_frequencies) > 0 else '-'
 
     if (len(matching_proteins) == 1):
         pep_type2 = 'proteoform-specific'
@@ -464,19 +474,19 @@ def process_row(index):
         pep_type2 = 'multi-gene'
 
     if found_variant:
-        return [row['ID'], row['Sequence'], 'single-variant(ProVar)', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-',  ';'.join(reading_frames)]
+        return [row['ID'], row['Sequence'], 'single-variant(ProVar)', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-',  ';'.join(reading_frames), '-']
     if (min_changes_found > 1) and has_canonical_alternative:
-        return [row['ID'], row['Sequence'], 'multi-variant', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames)]
+        return [row['ID'], row['Sequence'], 'multi-variant', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames), expected_max_freq]
     elif has_alt_allele and has_canonical_alternative:
-        return [row['ID'], row['Sequence'], 'single-variant', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames)]
+        return [row['ID'], row['Sequence'], 'single-variant', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames), expected_max_freq]
     elif has_alt_allele and not has_canonical_alternative and not has_frameshift:
-        return [row['ID'], row['Sequence'], 'variant-no-ref', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames)]
+        return [row['ID'], row['Sequence'], 'variant-no-ref', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames), expected_max_freq]
     elif has_frameshift:
         # Sequence contains a result of a frameshift, the mutation occurs either in the peptide, or upstream in the protein before it
-        return [row['ID'], row['Sequence'], 'frameshift', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames)]
+        return [row['ID'], row['Sequence'], 'frameshift', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames), expected_max_freq]
     else:   
         # looks like a translation of a canonical CDS sequence that doesn't have a canonical protein in Ensembl (e.g., alternative reading frame)
-        return [row['ID'], row['Sequence'], 'canonical-no-ref', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames)]
+        return [row['ID'], row['Sequence'], 'canonical-no-ref', pep_type2, '|'.join(matching_pep_changes), '|'.join(matching_protein_changes), '|'.join(matching_DNA_alleles), ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join([str(pos) for pos in matching_protein_positions]), ';'.join([str(x) for x in all_preceding_indels]) if (len(all_preceding_indels) > 0) else '-', ';'.join(reading_frames), expected_max_freq]
 
 # store results
 with Pool(args.threads) as p:
