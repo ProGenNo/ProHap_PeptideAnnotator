@@ -63,7 +63,7 @@ else:
     fasta_entries = read_fasta(args.fasta_file)
 
 print ("Reading", args.ref_fasta)
-ref_proteins = read_fasta(args.ref_fasta)
+ref_proteins = read_fasta(args.ref_fasta, trim_acc=True)
 
 print ("Reading", args.input_file)
 pep_df = pd.read_csv(args.input_file, sep='\t', header=0)
