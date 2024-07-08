@@ -21,7 +21,7 @@ The pipeline requires Snakemake and Conda installed. You can install these follo
     - The final protein database produced by ProHap / ProVar. This can be either in the full or simplified format.
 5. If using the simplified FASTA format, provide the fasta headers in the separate file.
 
-### Steps below to annotate a list of PSMs:
+### Steps to annotate a list of PSMs:
 
 1. Format your PSMs or peptides in a tab-separated file as described above
 2. Clone the PeptideAnnotator repository: `git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git; cd ProHap_PeptideAnnotator`
