@@ -1,25 +1,52 @@
-# ProHap_PeptideAnnotator
-Pipeline to annotate peptide identifications when using protein databases made by of ProHap / ProVar
+# ProHap Peptide Annotator
 
-### Input format and usage
+Pipeline to annotate peptide identifications when using protein databases made by [ProHap / ProVar](https://github.com/ProGenNo/ProHap).
+
+## Input format and usage
 
 The pipeline requires Snakemake and Conda installed. You can install these following [this guide](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html), _Installation via Conda/Mamba_. 
 
-Examples of input files and configuration can be found along with the annotation pipeline. Follow the steps below to annotate a list of PSMs:
+### Required input files:
 
-1. Format your PSMs or peptides in a tab-separated file having the following four columns (additional columns do not matter):
+1. List of PSMs or peptides in a tab-separated file having the following four columns (additional columns do not matter):
     - `ID`: Unique identifier for the PSM / peptide
     - `Sequence`: Amino acid sequence of the peptide
     - `Proteins`: List of protein accessions matching the concatenated FASTA file (e.g., `prot_123ab`), separated by semicolon
     - `Positions`: Positions of the first amino acid within the proteins above \(indexed from 0\), separated by semicolon
-4. Clone the PeptideAnnotator repository: `git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git; cd ProHap_PeptideAnnotator`
-3. Create a new configuration file based on the instructions in _config_example.yaml_.
-4. Provide the path to the configuration file on line 2 of _Snakefile_.
+2. Haplotype table provided by ProHap (if used)
+    - If using one of the publicly available ProHap databases, the haplotype table file is provided as the _F2_ file.
+3. Variant table provided by ProVar (if used)
+    - If using one of the publicly available ProHap databases, ProVar wasn't used and the variant table is not required.
+4. Concatenated FASTA file
+    - The final protein database produced by ProHap / ProVar. This can be either in the full or simplified format.
+5. If using the simplified FASTA format, provide the fasta headers in the separate file.
+
+### Steps below to annotate a list of PSMs:
+
+1. Format your PSMs or peptides in a tab-separated file as described above
+2. Clone the PeptideAnnotator repository: `git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git; cd ProHap_PeptideAnnotator`
+3. Create a new configuration file based on the instructions in _config_example.yaml_
+4. Provide the path to the configuration file on line 2 of _Snakefile_
 5. Activate the Conda environment to run Snakemake: `conda activate snakemake`
 6. Test Snakemake with a dry-run: `snakemake -c1 -n -q`
 7. Run the Snakemake pipeline to perform the annotation, specifying the number of available CPU cores in the `--cores` parameter. E.g., when using 30 cores, run `snakemake --cores 30 -p --use-conda`
 
-### Annotation output
+### Example
+
+Sample input files and configuration are provided in this repository. Follow these steps to run the example workflow:
+
+```
+# Clone the repository
+git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git;
+cd ProHap_PeptideAnnotator;
+
+# Run Snakemake with the default configuration
+snakemake --cores 10 -p --use-conda
+```
+
+The sample output can be found in the `sample_output.tsv` file.
+
+## Annotation output
 
 The peptide annotation pipeline produces a tab-separated file containing the following columns:
 
