@@ -42,10 +42,10 @@ psm_count = len(psm_df)
 # special condition for Percolator format to remove the residues before and after peptide (e.g., M.n[+42.021]PEPTIDEK.P)
 psm_df[args.seq_col] = psm_df[args.seq_col].apply(lambda seq: re.sub(r'\[[^]]*\]', '', seq).split('.')[1].replace('n', '').replace('I', 'L') if (seq[1] == '.') else re.sub(r'\[[^]]*\]', '', seq).replace('I', 'L') )
 
-unique_peptides = psm_df[args.seq_col].drop_duplicates().tolist()
+unique_peptides = psm_df.drop_duplicates(subset=[args.seq_col])
 
 def find_peptide(idx):
-    row = psm_df.iloc[idx]
+    row = unique_peptides.iloc[idx]
     seq = row[args.seq_col]
     result_prots = []
     result_pos = []
@@ -60,10 +60,10 @@ def find_peptide(idx):
                 result_prots.append(prot['accession'])
                 result_pos.append(str(prot['sequence'].replace('I', 'L').index(seq)))
 
-    return [row[args.id_col], seq, ';'.join(result_prots) if (len(result_prots) > 0) else row[args.prot_col], ';'.join(result_pos) if (len(result_prots) > 0) else -1]
+    return [seq, ';'.join(result_prots) if (len(result_prots) > 0) else (row[args.prot_col] if (args.prot_col is not None) else '-'), ';'.join(result_pos) if (len(result_prots) > 0) else -1]
 
 with Pool(args.threads) as p:
-    pep_map_data = list(tqdm(p.imap_unordered(find_peptide, unique_peptides), total=len(unique_peptides)))
+    pep_map_data = list(tqdm(p.imap_unordered(find_peptide, range(0, len(unique_peptides))), total=len(unique_peptides)))
     pep_map = pd.DataFrame(data=pep_map_data, columns=['seq', 'proteins', 'positions']).set_index('seq')
 
     p.close()
@@ -74,7 +74,7 @@ with Pool(args.threads) as p:
     for index,row in psm_df.iterrows():
         seq = row[args.seq_col]
         pept_mapped = pep_map.loc[seq]
-        result_data.append(['row_' + str(index), seq, pept_mapped['proteins'], pept_mapped['positions']])
+        result_data.append([row[args.id_col], seq, pept_mapped['proteins'], pept_mapped['positions']])
 
     # result_data = list(tqdm(p.imap_unordered(find_peptide, range(0, len(psm_df))), total=len(psm_df)))
     result_df = pd.DataFrame(data=result_data, columns=['ID', 'Sequence', 'Proteins', 'Positions'])
