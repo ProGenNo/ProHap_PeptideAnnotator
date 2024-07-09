@@ -21,7 +21,7 @@ parser.add_argument("-id", dest="id_col", required=False,
                     help="ID column name (default: 'ID')", default='ID')
 
 parser.add_argument("-pc", dest="prot_col", required=False,
-                    help="proteins column name (default: 'proteins')", default=None)
+                    help="proteins column name (default: N/A (infer))", default=None)
 
 parser.add_argument("-t", dest="threads", type=int, required=True,
                     help="maximum number of threads")
@@ -39,7 +39,8 @@ psm_df = pd.read_table(args.input_file)
 psm_count = len(psm_df)
 
 # remove PTMs and other characters (e.g., the N-terminal)
-psm_df[args.seq_col] = psm_df[args.seq_col].apply(lambda seq: re.sub(r'\[[^]]*\]', '', seq).split('.')[1].replace('n', '').replace('I', 'L'))
+# special condition for Percolator format to remove the residues before and after peptide (e.g., M.n[+42.021]PEPTIDEK.P)
+psm_df[args.seq_col] = psm_df[args.seq_col].apply(lambda seq: re.sub(r'\[[^]]*\]', '', seq).split('.')[1].replace('n', '').replace('I', 'L') if (seq[1] == '.') else re.sub(r'\[[^]]*\]', '', seq).replace('I', 'L') )
 
 unique_peptides = psm_df[args.seq_col].drop_duplicates().tolist()
 
