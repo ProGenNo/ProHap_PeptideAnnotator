@@ -23,6 +23,9 @@ parser.add_argument("-id", dest="id_col", required=False,
 parser.add_argument("-pc", dest="prot_col", required=False,
                     help="proteins column name (default: N/A (infer))", default=None)
 
+parser.add_argument("-pos", dest="pos_col", required=False,
+                    help="position column name (default: N/A (infer))", default=None)
+
 parser.add_argument("-t", dest="threads", type=int, required=True,
                     help="maximum number of threads")
 
@@ -50,10 +53,13 @@ def find_peptide(idx):
     result_prots = []
     result_pos = []
     if (args.prot_col is not None):
-        for prot in re.split(r"[,;]", row[args.prot_col]):
-            if (seq in prot['sequence'].replace('I', 'L')):
-                result_prots.append(prot['accession'])
-                result_pos.append(str(prot['sequence'].replace('I', 'L').index(seq)))
+        if (args.pos_col is not None):
+            result_pos = re.split(r"[,;]", row[args.pos_col])
+        else:
+            for prot in re.split(r"[,;]", row[args.prot_col]):
+                if (seq in prot['sequence'].replace('I', 'L')):
+                    result_prots.append(prot['accession'])
+                    result_pos.append(str(prot['sequence'].replace('I', 'L').index(seq)))
     else:
         for prot in fasta_entries.values():
             if (seq in prot['sequence'].replace('I', 'L')):
