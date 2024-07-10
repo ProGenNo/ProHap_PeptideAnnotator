@@ -20,4 +20,4 @@ fasta_header: "sample_data/sample_proteins_headers.tsv"
 output_file: "sample_output.tsv"
 
 # Maximum number of CPU cores used
-max_cores: 15
+max_cores: 5
