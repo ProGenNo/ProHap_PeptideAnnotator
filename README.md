@@ -21,6 +21,26 @@ The pipeline requires Snakemake and Conda installed. You can install these follo
     - The final protein database produced by ProHap / ProVar. This can be either in the full or simplified format.
 5. If using the simplified FASTA format, provide the fasta headers in the separate file.
 
+### Formatting input files:
+
+The input list of peptides or PSMs should be formatted as below:
+```
+ID	Sequence	Proteins	Positions
+pep_fc539	GYEDGGIHLECRSTGWYPQPQIQWSDAK	prot_8489;prot_2c867;prot_4293a;prot_4e288	155;132;113;113
+pep_1e5ccd	NYWGSVRR	prot_1003	632
+```
+The script in `src/format_input.py` can convert any tab- or comma-separated file into the expected format. The script expects the _pandas_, _argparse_, and _tqdm_ libraries (included in the Conda environment in `condaenv.yaml`), and accepts the following arguments:
+
+* `-i`: Input file name (relative or full path)
+* `-sep`: Input file separator (default: tab)
+* `-f`: FASTA file created by ProHap (full or simplified format)
+* `-o`: Output file name (relative or full path)
+* `-t`: Number of threads (default: 5)
+* `-sc`: Sequence column name (default: "sequence")
+* `-id`: ID column name (default: ignore, use line number as unique identifier)
+* `-pc`: Protein accessions column name, expecting values separated by colon or semicolon (defualt: ignore, find peptides in the FASTA entries - can be slow)
+* `-pos`: Position of peptides within proteins, expecting values separated by colon or semicolon (defualt: ignore, find peptides in the FASTA entries - can be slow)
+
 ### Steps to annotate a list of PSMs:
 
 1. Format your PSMs or peptides in a tab-separated file as described above
