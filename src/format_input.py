@@ -11,6 +11,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument("-i", dest="input_file", required=True,
                     help="input report file")
 
+parser.add_argument("-sep", dest="input_sep", required=False,
+                    help="input file separator (default: tab)", default='\t')
+
 parser.add_argument("-f", dest="fasta_file", required=True,
                     help="full contactenated fasta file")
 
@@ -18,7 +21,7 @@ parser.add_argument("-sc", dest="seq_col", required=False,
                     help="sequence column name (default: 'sequence')", default='sequence')
 
 parser.add_argument("-id", dest="id_col", required=False,
-                    help="ID column name (default: 'ID')", default='ID')
+                    help="ID column name (default: N/A (use line number))", default=None)
 
 parser.add_argument("-pc", dest="prot_col", required=False,
                     help="proteins column name (default: N/A (infer))", default=None)
@@ -26,8 +29,8 @@ parser.add_argument("-pc", dest="prot_col", required=False,
 parser.add_argument("-pos", dest="pos_col", required=False,
                     help="position column name (default: N/A (infer))", default=None)
 
-parser.add_argument("-t", dest="threads", type=int, required=True,
-                    help="maximum number of threads")
+parser.add_argument("-t", dest="threads", type=int, required=False,
+                    help="maximum number of threads (default: 5)", default=5)
 
 parser.add_argument("-o", dest="output_file", required=True,
                     help="output TSV file")
@@ -38,7 +41,7 @@ print ("Reading", args.fasta_file)
 fasta_entries = read_fasta(args.fasta_file)
 
 print ("Reading", args.input_file)
-psm_df = pd.read_table(args.input_file)
+psm_df = pd.read_csv(args.input_file, sep=args.input_sep)
 psm_count = len(psm_df)
 
 # remove PTMs and other characters (e.g., the N-terminal)
@@ -56,7 +59,8 @@ def find_peptide(idx):
         if (args.pos_col is not None):
             result_pos = re.split(r"[,;]", row[args.pos_col])
         else:
-            for prot in re.split(r"[,;]", row[args.prot_col]):
+            for protID in re.split(r"[,;]", row[args.prot_col]):
+                prot = fasta_entries[protID]
                 if (seq in prot['sequence'].replace('I', 'L')):
                     result_prots.append(prot['accession'])
                     result_pos.append(str(prot['sequence'].replace('I', 'L').index(seq)))
@@ -80,7 +84,7 @@ with Pool(args.threads) as p:
     for index,row in psm_df.iterrows():
         seq = row[args.seq_col]
         pept_mapped = pep_map.loc[seq]
-        result_data.append([row[args.id_col], seq, pept_mapped['proteins'], pept_mapped['positions']])
+        result_data.append([row[args.id_col] if (args.id_col is not None) else 'pep_' + hex(index)[2:], seq, pept_mapped['proteins'], pept_mapped['positions']])
 
     # result_data = list(tqdm(p.imap_unordered(find_peptide, range(0, len(psm_df))), total=len(psm_df)))
     result_df = pd.DataFrame(data=result_data, columns=['ID', 'Sequence', 'Proteins', 'Positions'])
