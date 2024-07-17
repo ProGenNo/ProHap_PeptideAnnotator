@@ -10,7 +10,7 @@ rule all:
 
 rule download_reference_proteome:
     output:
-        "data/fasta/Homo_sapiens.GRCh38.pep.all.fa"
+        temp("data/fasta/Homo_sapiens.GRCh38.pep.all.fa")
     shell:
         "mkdir -p data/fasta ; "
         "wget " + Ensembl_FTP_URL + "fasta/homo_sapiens/pep/Homo_sapiens.GRCh38.pep.all.fa.gz -O {output}.gz && gunzip {output}.gz; "
