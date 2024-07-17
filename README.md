@@ -2,11 +2,38 @@
 
 Pipeline to annotate peptide identifications when using protein databases made by [ProHap / ProVar](https://github.com/ProGenNo/ProHap).
 
-## Input format and usage
+## Requirements and usage
 
 The pipeline requires Snakemake and Conda installed. You can install these following [this guide](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html), _Installation via Conda/Mamba_. 
 
-### Required input files:
+### Steps to annotate a list of PSMs:
+
+1. Format your PSMs or peptides in a tab-separated file as described below
+2. Clone the PeptideAnnotator repository: `git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git; cd ProHap_PeptideAnnotator`
+3. Create a new configuration file based on the instructions in _config_example.yaml_
+4. Provide the path to the configuration file on line 2 of _Snakefile_
+5. Activate the Conda environment to run Snakemake: `conda activate snakemake`
+6. Test Snakemake with a dry-run: `snakemake -c1 -n -q`
+7. Run the Snakemake pipeline to perform the annotation, specifying the number of available CPU cores in the `--cores` parameter. E.g., when using 30 cores, run `snakemake --cores 30 -p --use-conda`
+
+### Example
+
+Sample input files and configuration are provided in this repository. Follow these steps to run the example workflow:
+
+```
+# Clone the repository
+git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git;
+cd ProHap_PeptideAnnotator;
+
+# Run Snakemake with the default configuration
+snakemake --cores 10 -p --use-conda
+```
+
+The sample output can be found in the `sample_output.tsv` file.
+
+## Input format
+
+### Required files:
 
 1. List of PSMs or peptides in a tab-separated file having the following four columns (additional columns do not matter):
     - `ID`: Unique identifier for the PSM / peptide
@@ -41,30 +68,10 @@ The script in `src/format_input.py` can convert any tab- or comma-separated file
 * `-pc`: Protein accessions column name, expecting values separated by colon or semicolon (defualt: ignore, find peptides in the FASTA entries - can be slow)
 * `-pos`: Position of peptides within proteins, expecting values separated by colon or semicolon (defualt: ignore, find peptides in the FASTA entries - can be slow)
 
-### Steps to annotate a list of PSMs:
-
-1. Format your PSMs or peptides in a tab-separated file as described above
-2. Clone the PeptideAnnotator repository: `git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git; cd ProHap_PeptideAnnotator`
-3. Create a new configuration file based on the instructions in _config_example.yaml_
-4. Provide the path to the configuration file on line 2 of _Snakefile_
-5. Activate the Conda environment to run Snakemake: `conda activate snakemake`
-6. Test Snakemake with a dry-run: `snakemake -c1 -n -q`
-7. Run the Snakemake pipeline to perform the annotation, specifying the number of available CPU cores in the `--cores` parameter. E.g., when using 30 cores, run `snakemake --cores 30 -p --use-conda`
-
-### Example
-
-Sample input files and configuration are provided in this repository. Follow these steps to run the example workflow:
-
+A provided example shows a simulated output file of [Percolator](http://percolator.ms/) in `sample_data/sample_percolator_output.tsv`. To format this example file, run the following command: 
 ```
-# Clone the repository
-git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git;
-cd ProHap_PeptideAnnotator;
-
-# Run Snakemake with the default configuration
-snakemake --cores 10 -p --use-conda
+python src/format_input.py -i sample_data/sample_percolator_output.tsv -f sample_data/sample_proteins.fa -sc peptide -id PSMId -pc proteinIds -t 2 -o <path/to/output_file>
 ```
-
-The sample output can be found in the `sample_output.tsv` file.
 
 ## Annotation output
 
@@ -87,10 +94,11 @@ The peptide annotation pipeline produces a tab-separated file containing the fol
     - _multi-gene_: maps to the products of different genes
 - `covered_changes_peptide`: location of matching amino acid changes within the peptide, delimited by a semicolon for multi-variant peptides
 - `covered_changes_protein`: covered amino acid changes located within the different matching protein sequences, delimited by "|". E.g., the value `ENST1:123:P>123:R;129:R>129:L|ENST2:223:P>223:R;229:R>229:L` means that there are two amino acid substitutions identified in the _ENST1_ transcript, or two substitutions in the _ENST2_ transcript.
-- `covered_alleles_dna`: alleles of genetic variants covered by this peptide. Reference alleles are denoted as _chromosome:position:REF_, alternative alleles denoted as _chromosome:position:REF>ALT_. In case of a multi-gene peptide, the alleles covered in the respective matching genes will be delimited by "|". E.g., the value `1:123456:C>A;1:123798:G|12:987321:T>G` would mean that in the first matching gene, one alternative and one reference allele have been identified, and in the second matching gene, one alternative allele has been identified. The IDs of the respective genes can be found in the _matching_genes_ column.
+- `covered_alleles_dna`: alleles of genetic variants encoding this peptide. Reference alleles are denoted as _chromosome:position:REF_, alternative alleles denoted as _chromosome:position:REF>ALT_. In case of a multi-gene peptide, the alleles in the respective matching genes will be delimited by "|". E.g., the value `1:123456:C>A;1:123798:G|12:987321:T>G` would mean that in the first matching gene, one alternative and one reference would encode the given peptide, and in the second matching gene, one alternative allele would encode this peptide. The IDs of the respective genes can be found in the _matching_genes_ column.
 - `matching_proteins`: identifiers of the proteins matching this peptide. Canonical proteins are identified by their Ensembl Transcript ID (ENSTxxx), contaminants by their provided name (UniProt name in case of cRAP contaminants), and sequences generated by ProHap / ProVar by the identifiers of the respective haplotype or variant sequences.
 - `positions_in_proteins`: positions of the peptide within these protein sequences
 - `matching_transcripts`: identifiers of the matching transcripts in Ensembl (ENSTxxx)
 - `matching_genes`: identifiers of the matching genes in Ensembl (ENSGxxx)
 - `preceding_indel_shift`: only relevant for haplotype sequences: the cumulative length of any possible upstream in-frame insertions or deletions. Useful to align peptides with the reference protein
 - `reading_frames`: only relevant if three-frame translation in ProHap / ProVar is applied (disabled by default): reading frames used for the translations of the respective protein sequences
+- `expected_maximum_frequency`: combined frequency of the haplotypes encoding this peptide sequence. In the case of multi-gene peptides, consider the following example: If the peptide is encoded either by haplotypes A or B of protein 1, or haplotype C of protein 2, the expected maximum frequency will be _max(A.frequency + B.frequency, C.frequency)_.
