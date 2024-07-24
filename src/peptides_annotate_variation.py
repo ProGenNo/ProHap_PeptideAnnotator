@@ -174,7 +174,8 @@ def check_ref_alleles(transcriptID, position, sequence, log_mismatch = False):
                 result.append(alleles['DNA'][allele_idx])
             else:
                 if (log_mismatch):
-                    log_file.write(transcriptID + ': reference allele mismatched. Expected: ' + alleles['allele'][allele_idx] + ' found: ' + sequence[:pep_position] + ' ' + sequence[pep_position:])
+                    log_file.write(transcriptID + ': reference allele mismatched. Expected: ' + alleles['allele'][allele_idx] + ' found: ' + sequence[:pep_position] + ' ' + sequence[pep_position:] + '\n')
+                    print(transcriptID + ': reference allele mismatched. Expected: ' + alleles['allele'][allele_idx] + ' found: ' + sequence[:pep_position] + ' ' + sequence[pep_position:])
 
     return result
 
@@ -344,6 +345,7 @@ def process_row(index):
                 # Sanity check: have we found the alternative allele in the peptide?
                 if found_allele != alt_prot_allele:
                     log_file.write('peptide ' + row['ID'] + ' variant: ' + protID + ' expected: ' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:change_pep_loc[1]] + '\n')
+                    print('peptide ' + row['ID'] + ' variant: ' + protID + ' expected: ' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:change_pep_loc[1]])
                 else:
                     # All looks ok -> store this change as identified
                     matching_protein_changes.append(parent_transcript + ':' + protein_change)
@@ -413,7 +415,8 @@ def process_row(index):
 
                     # Sanity check: have we found the alternative allele in the peptide?
                     if found_allele != alt_prot_allele:
-                        log_file.write('PSM ' + row['ID'] + ' haplotype:' + protID + ' expected:' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:])
+                        log_file.write('PSM ' + row['ID'] + ' haplotype:' + protID + ' expected:' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:] + '\n')
+                        print('PSM ' + row['ID'] + ' haplotype:' + protID + ' expected:' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:])
                     else:
                         # All looks ok -> store this change as identified
                         haplo_matching_changes.append([change_pep_loc[0], ref_prot_allele, alt_prot_allele])
