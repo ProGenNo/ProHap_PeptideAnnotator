@@ -244,6 +244,10 @@ def process_row(index):
     # canonical peptide = any of the matching sequences is a canonical protein
     is_canonical = any([ 'ref' in fasta_entries[fastaID]['tag'] for fastaID in fasta_accessions ])
     if is_canonical:
+        # if the canonical peptides matches a few haplotypes and one canonical sequence, it should still be protein-specific and not proteoform-specific
+        # check this first before filtering the matching protein IDs
+        if (len(matching_proteins) == 1):
+            pep_type2 = 'proteoform-specific'
 
         # Forget matches to variant sequences as this is a canonical peptide
         # Store the ENST ID for matching transcripts
@@ -254,11 +258,11 @@ def process_row(index):
         # get gene IDs only for canonical matches (by ENST -> ENSG)
         matching_genes = [ annotations_db[trID.split('.', 1)[0]].attributes['gene_id'][0] for trID in matching_transcripts ]
         matching_genes = list(dict.fromkeys(matching_genes))    # remove duplicates
-        if (len(matching_proteins) == 1):
-            pep_type2 = 'proteoform-specific'
-        elif (len(matching_genes) == 1):
+
+        # finish checking type if not proteoform-specific
+        if (pep_type2 == '') and (len(matching_genes) == 1):
             pep_type2 = 'protein-specific'
-        else:
+        elif (pep_type2 == ''):
             pep_type2 = 'multi-gene'
 
         dna_alleles = []
@@ -285,10 +289,7 @@ def process_row(index):
     found_variant = False
 
     for i,protID in enumerate(matching_proteins):
-        try:
-            reading_frame = int(reading_frames[i])
-        except:
-            print(protID, row['ID'])
+        reading_frame = int(reading_frames[i])
 
         # check for proteins that were added manually and don't have associated metadata
         # assume these are variants -> report protein ID as the protein change, DNA change unknown
