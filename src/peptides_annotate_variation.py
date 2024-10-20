@@ -207,11 +207,6 @@ def process_row(index):
     peptide_length = len(row['Sequence'])                   # length of the peptide sequence
     fasta_peptide_starts = [ int(pos) for pos in re.split(r"[,;]", row['Positions']) ]    # positions of the peptide within respective candidate protein 
 
-    # crap match = any matching sequence is a contaminant
-    is_contaminant = any([ 'cont' in fasta_entries[fastaID]['tag'] for fastaID in fasta_accessions ])
-    if is_contaminant:
-        return [row['ID'], row['Sequence'], 'contaminant', 'contaminant', '-', '-', '-', ';'.join([ ';'.join(fasta_entries[fastaID]['matching_proteins']) for fastaID in fasta_accessions if ('cont' in fasta_entries[fastaID]['tag']) ]), '-', '-', '-', '-', '-', '-', '-']
-
     # concentrate all matching proteins (haplotype or stable protein ids)
     matching_proteins = []
     matching_transcripts = []
@@ -241,6 +236,11 @@ def process_row(index):
     matching_proteins, matching_protein_positions, reading_frames = zip(*zipped)
 
     pep_type2 = ''  # type by specificity (proteoform- x protein-specific x multi-gene)
+
+    # crap match = any matching sequence is a contaminant
+    is_contaminant = any([ 'cont' in fasta_entries[fastaID]['tag'] for fastaID in fasta_accessions ])
+    if is_contaminant:
+        return [row['ID'], row['Sequence'], 'contaminant', 'contaminant', '-', '-', '-', ';'.join(matching_proteins), '-', '-', '-', ';'.join([str(pos) for pos in matching_protein_positions]), '-', '-', '-']
 
     # canonical peptide = any of the matching sequences is a canonical protein
     is_canonical = any([ 'ref' in fasta_entries[fastaID]['tag'] for fastaID in fasta_accessions ])
