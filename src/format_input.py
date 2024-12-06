@@ -44,9 +44,9 @@ print ("Reading", args.input_file)
 psm_df = pd.read_csv(args.input_file, sep=args.input_sep)
 psm_count = len(psm_df)
 
-# remove PTMs and other characters (e.g., the N-terminal)
-# special condition for Percolator format to remove the residues before and after peptide (e.g., M.n[+42.021]PEPTIDEK.P)
-psm_df[args.seq_col] = psm_df[args.seq_col].apply(lambda seq: re.sub(r'\[[^]]*\]', '', seq).split('.')[1].replace('n', '').replace('I', 'L') if (seq[1] == '.') else re.sub(r'\[[^]]*\]', '', seq).replace('I', 'L') )
+# remove PTMs and other characters (e.g., the N-terminal, charge state)
+# special condition for Percolator format to remove the residues before and after peptide (e.g., M.n[+42.021]PEPTIDEK2.P -> PEPTIDEK)
+psm_df[args.seq_col] = psm_df[args.seq_col].apply(lambda seq: re.sub(r'\[[^]]*\]|\d', '', seq).split('.')[1].replace('n', '').replace('I', 'L') if (seq[1] == '.') else re.sub(r'\[[^]]*\]', '', seq).replace('I', 'L') )
 
 unique_peptides = psm_df.drop_duplicates(subset=[args.seq_col])
 
