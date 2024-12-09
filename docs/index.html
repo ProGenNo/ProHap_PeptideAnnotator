@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Documentation for the ProHap Peptide Annotator tool">
+    <meta name="author" content="Jakub Vasicek">
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+
+<body class="bg-light">
+    <div class="container">
+    <div class="py-5 text-left">
+        <h2>Create your config.yaml file for <a href="https://github.com/ProGenNo/ProHap_PeptideAnnotator" target="_blank">ProHap Peptide Annotator</a></h2>        
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <form id="form-general-params">
+                <h3 class="mb-4">General parameters</h3>                
+                <hr class="mb-1">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="ensembl-release">Ensembl release</label>
+                        <input type="text" class="form-control very-short-input" name="ensembl-release" value="110" id="ensembl-release" required="required" aria-required="true">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="ensembl-release">Max. threads</label>
+                        <input type="text" class="form-control very-short-input" name="max-threads" value="5" id="max-threads" required="required" aria-required="true">
+                    </div>
+                </div>            
+                <hr class="mb-2">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="prohap-switch" checked>
+                    <label class="form-check-label" for="prohap-switch">ProHap database used</label>
+                </div>
+                <div class="mb-2"></div>
+                <div>
+                    <label for="haplo-table-path">Path to the ProHap haplotype table file</label>
+                    <input type="text" class="form-control" name="haplo-table-path" placeholder="e.g. ProHap_data/F2_240530_1kGP_EUR_GRCh38_haplo.tsv" value="" id="haplo-table-path" required="required" aria-required="true">
+                </div>
+                <hr class="mb-2">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="prohap-switch">
+                    <label class="form-check-label" for="prohap-switch">ProVar database used</label>
+                </div>
+                <div class="mb-2"></div>
+                <div>
+                    <label for="var-table-path">Path to the ProVar variant table file</label>
+                    <input type="text" class="form-control" name="var-table-path" placeholder="e.g. ProVar_data/ProVar_inhouse_variants.tsv" value="" id="var-table-path" required="required" aria-required="true" disabled>
+                </div>
+                <hr class="mb-2">
+                <div>
+                    <label for="fasta-path">Path to the complete FASTA file used</label>
+                    <input type="text" class="form-control" name="fasta-path" placeholder="e.g. ProHap_data/F1_240530_ens110_ref_contam_1kGP_EUR_GRCh38_haplo_simplified.fa" value="" id="fasta-path" required="required" aria-required="true">
+                </div>
+                <div class="mb-2"></div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="header-switch" checked>
+                    <label class="form-check-label" for="header-switch">Simplified database format used</label>
+                </div>
+                <div class="mb-2"></div>
+                <div>
+                    <label for="fasta-header-path">Path to the FASTA header file</label>
+                    <input type="text" class="form-control" name="fasta-header-path" placeholder="e.g. ProHap_data/F1.2_240530_ens110_ref_contam_1kGP_EUR_GRCh38_haplo_header.tsv" value="" id="fasta-header-path" required="required" aria-required="true">
+                </div>
+                <hr class="mb-2">
+                <div>
+                    <h5 class="mb-2">Input file</h5>
+                </div>
+                <label for="input-path">Path to the input file of peptides / PSMs</label>
+                <input type="text" class="form-control" name="input-path" placeholder="e.g. data/peptides.tsv" value="" id="input-path" required="required" aria-required="true">
+                <hr class="mb-2">
+                <div>
+                    <h5 class="mb-2">Input format</h5>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-3">
+                        <label for="ID-column">ID column</label>
+                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the unique identifier for the PSM / peptide">(?)</span>
+                        <input type="text" class="form-control" name="ID-column" value="ID" id="ID-column" required="required" aria-required="true">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="Seq-column">Sequence column</label>
+                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the amino acid peptide sequence - if modifications and/or residues before and after are included, they will be ignored (e.g., 'M.n[+42.021]PEPTIDEK2.A' = 'PEPTIDEK').">(?)</span>
+                        <input type="text" class="form-control" name="Seq-column" value="Sequence" id="Seq-column" required="required" aria-required="true">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="Prot-column">Protein column</label>
+                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the list of protein accessions matching the concatenated FASTA file, separated by semicolon (e.g., 'prot_123ab;prot_234cd'). If left blank, the protein IDs will be inferred from the FASTA file. Please note that this is computationally expensive and will take time. If there are peptides that do not match any protein, they will be removed.">(?)</span>
+                        <input type="text" class="form-control" name="Prot-column" value="" id="Prot-column" required="required" aria-required="true">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="Pos-column">Position column</label>
+                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the positions of the first amino acid within each of the proteins listed in the protein column, indexed from 0, separated by semicolon. If left blank, the peptide positions will be inferred from the FASTA file.">(?)</span>
+                        <input type="text" class="form-control" name="Pos-column" id="Pos-column" required="required" aria-required="true">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-1">
+                        <legend class="col-form-label col-md-3 pt-0">Separator</legend>
+                        <div class="d-block my-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="separator-radio" id="separator-radio-1" value="default" checked>
+                                <label class="form-check-label" for="separator-radio-1">Tab</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="separator-radio" id="separator-radio-2" value="default">
+                                <label class="form-check-label" for="separator-radio-2">Comma</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="separator-radio" id="separator-radio-3" value="default">
+                                <label class="form-check-label" for="separator-radio-3">Other</label>
+                            </div>
+                        </div>
+                        <input type="text" class="form-control very-short-input" name="sep-other" value="" id="sep-other" disabled>
+                    </div>
+                </div>                
+                <hr class="mb-2">
+                <div>
+                    <h5 class="mb-2">Output file</h5>
+                </div>
+                <label for="output-path">Path to the result file with peptide annotations</label>
+                <input type="text" class="form-control" name="output-path" placeholder="e.g. results/peptides_annotated.tsv" value="" id="output-path" required="required" aria-required="true">
+            </form>
+        </div>
+    </div>
+    <hr class="mb-3 mt-3">
+    <div class="mb-3">
+        <button onclick="download('config.yaml')">Download</button>
+        <span>or copy the content below to your config.yaml file:</span>
+    </div>
+    <div class="row">
+        <div class="col" id="config-content">            
+        </div>
+    </div>
+</div>
+
+<footer class="my-5 pt-5 text-muted text-center">
+    <p class="mb-1">2024 University of Bergen</p>
+</footer>
+
+<style>
+    .container {
+        margin-top: 5vh;
+    }
+    .short-input {
+        width: 35%;
+    }
+    .very-short-input {
+        width: 15%;
+    }
+    #config-content {
+        background: #bbb;
+    }
+    .question-help {
+        cursor: pointer;
+    }
+</style>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
+<script src="configBuilder.js"></script>
+
+<script>
+    // enable tooltips
+    /*$(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })*/
+
+    config_html = getConfigHTML("110", "5", "MISSING", "", "MISSING", "MISSING", "MISSING", "ID", "Sequence", "", "", "\\t", "MISSING")
+
+    function update_config_text() {
+        d3.select('#config-content').html(config_html)
+    }
+
+    update_config_text()
+
+    function download(filename) {
+        text = config_html.replaceAll('<p>', '').replaceAll('</p>', '\n').replaceAll('<br>', '\n')
+
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
+    d3.select('#form-general-params').on('change', (evt) => {
+        console.log(evt.currentTarget)
+        const ensembl_release = evt.currentTarget[0].value
+        const max_cores = evt.currentTarget[1].value
+
+        const prohap_used = evt.currentTarget[2].checked
+        const haplo_table = prohap_used ? (evt.currentTarget[3].value.length > 0 ? evt.currentTarget[3].value : "MISSING") : ""
+        if (prohap_used) {
+            d3.select("#haplo-table-path").attr("disabled", null)
+        } else {
+            d3.select("#haplo-table-path").attr("disabled", true)
+        }
+
+        const provar_used = evt.currentTarget[4].checked
+        const var_table = provar_used ? (evt.currentTarget[5].value.length > 0 ? evt.currentTarget[5].value : "MISSING") : ""
+        if (provar_used) {
+            d3.select("#var-table-path").attr("disabled", null)
+        } else {
+            d3.select("#var-table-path").attr("disabled", true)
+        }
+
+        const final_FASTA = evt.currentTarget[6].value.length > 0 ? evt.currentTarget[6].value : "MISSING"
+        const simplified_used = evt.currentTarget[7].checked
+        const fasta_header = simplified_used ? (evt.currentTarget[8].value.length > 0 ? evt.currentTarget[8].value : "MISSING") : ""
+        if (simplified_used) {
+            d3.select("#fasta-header-path").attr("disabled", null)
+        } else {
+            d3.select("#fasta-header-path").attr("disabled", true)
+        }
+        
+        const input_file = evt.currentTarget[9].value.length > 0 ? evt.currentTarget[9].value : "MISSING"
+
+        const ID_col = evt.currentTarget[10].value.length > 0 ? evt.currentTarget[10].value : "MISSING"
+        const seq_col = evt.currentTarget[11].value.length > 0 ? evt.currentTarget[11].value : "MISSING"
+        const prot_col = evt.currentTarget[12].value
+        const pos_col = evt.currentTarget[13].value
+
+        let sep = ""
+        if (evt.currentTarget[14].checked) {
+            d3.select("#sep-other").attr("disabled", true)
+            sep = '\\t'
+        } else if (evt.currentTarget[15].checked) {
+            d3.select("#sep-other").attr("disabled", true)
+            sep = ','
+        } else {
+            d3.select("#sep-other").attr("disabled", null)
+            sep = evt.currentTarget[17].value
+        }
+
+        const output_file = evt.currentTarget[18].value.length > 0 ? evt.currentTarget[18].value : "MISSING"
+
+        config_html = getConfigHTML(ensembl_release, max_cores, haplo_table, var_table, final_FASTA, fasta_header, input_file, ID_col, seq_col, prot_col, pos_col, sep, output_file)
+        update_config_text()    
+    })
+</script>
