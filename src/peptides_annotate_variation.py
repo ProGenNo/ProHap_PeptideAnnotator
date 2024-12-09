@@ -144,7 +144,7 @@ for trID in transcript_allele_locations:
 annotations_db = gffutils.FeatureDB(args.annotation_db)
 
 log_file = open(args.log_file, 'a')
-log_file.write('------------' + '[' + datetime.now().strftime('%X %x') + '] file: ' + args.input_file + ':' + '------------\n')
+log_file.write('------------' + '[' + datetime.now().strftime('%X %x') + '] ProHap Peptide Annotator ------------\n')
 
 summary_data = []
 summary_columns = ['ID', 'sequence', 'pep_type1', 'pep_type2', 'covered_changes_peptide', 'covered_changes_protein', 'covered_alleles_dna', 'matching_proteins', 'matching_transcripts', 'matching_genes', 'gene_names', 'positions_in_proteins', 'preceding_indel_shift', 'reading_frames', 'expected_maximum_frequency']
