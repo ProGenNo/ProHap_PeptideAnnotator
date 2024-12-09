@@ -1,6 +1,7 @@
 import pandas as pd
 import argparse
 import re
+from datetime import datetime
 from common import read_fasta
 from tqdm import tqdm
 from multiprocessing import Pool
@@ -35,6 +36,9 @@ parser.add_argument("-t", dest="threads", type=int, required=False,
 parser.add_argument("-o", dest="output_file", required=True,
                     help="output TSV file")
 
+parser.add_argument("-removed", dest="removed_output_file", required=True,
+                    help="output TSV file - list of removed peptides (not matching provided FASTA)")
+
 args = parser.parse_args()
 
 print ("Reading", args.fasta_file)
@@ -58,6 +62,7 @@ def find_peptide(idx):
     if (args.prot_col is not None):
         if (args.pos_col is not None):
             result_pos = re.split(r"[,;]", row[args.pos_col])
+            result_prots = row[args.prot_col].split(';')
         else:
             for protID in re.split(r"[,;]", row[args.prot_col]):
                 prot = fasta_entries[protID]
@@ -88,6 +93,15 @@ with Pool(args.threads) as p:
 
     # result_data = list(tqdm(p.imap_unordered(find_peptide, range(0, len(psm_df))), total=len(psm_df)))
     result_df = pd.DataFrame(data=result_data, columns=['ID', 'Sequence', 'Proteins', 'Positions'])
+
+    removed_outfile = open(args.removed_output_file, 'w')
+    removed_outfile.write('------------' + '[' + datetime.now().strftime('%X %x') + '] file: ' + args.input_file + ' ------------\nRemoved peptides:\n')
+    for index,row in result_df[result_df['Proteins'] == '-'].iterrows():
+        removed_outfile.write(row['ID'] + ': ' + row['Sequence'] + '\n')
+    removed_outfile.close()
+    
+    # Remove peptides that do not match any protein in the provided FASTA
+    result_df = result_df[result_df['Proteins'] != '-']
 
     p.close()
     p.join()

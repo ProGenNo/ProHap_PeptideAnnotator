@@ -21,3 +21,24 @@ output_file: "sample_output.tsv"
 
 # Maximum number of CPU cores used
 max_cores: 5
+
+# ---------------- Input formatting ----------------
+
+# Column containing the unique identifier for the PSM / peptide
+ID_col: "ID"
+
+# Column containing the amino acid peptide sequence 
+# If modifications and/or residues before and after are included, they will be ignored (e.g., 'M.n[+42.021]PEPTIDEK2.A' = 'PEPTIDEK').
+seq_col: "Sequence"
+
+# Column containing the list of protein accessions matching the concatenated FASTA file, separated by semicolon (e.g., 'prot_123ab;prot_234cd'). 
+# If left blank (""), the protein IDs will be inferred from the FASTA file. Please note that this is computationally expensive and will take time. 
+# If there are peptides that do not match any protein, they will be removed.
+prot_col: "Proteins"
+
+# Column containing the positions of the first amino acid within each of the proteins listed in the protein column, indexed from 0, separated by semicolon. 
+# If left blank (""), the peptide positions will be inferred from the FASTA file.
+pos_col: "Positions"
+
+# Separator
+sep: "\t"

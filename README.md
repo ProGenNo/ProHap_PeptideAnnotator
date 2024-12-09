@@ -25,8 +25,11 @@ Sample input files and configuration are provided in this repository. Follow the
 git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git;
 cd ProHap_PeptideAnnotator;
 
+# Copy the configuration to config.yaml
+cp config_example.yaml config.yaml;
+
 # Run Snakemake with the default configuration
-snakemake --cores 10 -p --use-conda
+snakemake --cores 5 --use-conda
 ```
 
 The sample output can be found in the `sample_output.tsv` file.
@@ -37,9 +40,9 @@ The sample output can be found in the `sample_output.tsv` file.
 
 1. List of PSMs or peptides in a tab-separated file having the following four columns (additional columns do not matter):
     - `ID`: Unique identifier for the PSM / peptide
-    - `Sequence`: Amino acid sequence of the peptide
-    - `Proteins`: List of protein accessions matching the concatenated FASTA file (e.g., `prot_123ab`), separated by semicolon
-    - `Positions`: Positions of the first amino acid within the proteins above \(indexed from 0\), separated by semicolon
+    - `Sequence`: Amino acid sequence of the peptide - if modifications and/or residues before and after are included, they will be ignored (e.g., "M.n[+42.021]PEPTIDEK2.A" will be understood as "PEPTIDEK").
+    - `Proteins`: List of protein accessions matching the concatenated FASTA file (e.g., `prot_123ab`), separated by semicolon (optional)
+    - `Positions`: Positions of the first amino acid within the proteins above \(indexed from 0\), separated by semicolon (optional)
 2. Haplotype table provided by ProHap (if used)
     - If using one of the publicly available ProHap databases, the haplotype table file is provided as the _F2_ file.
 3. Variant table provided by ProVar (if used)
@@ -50,27 +53,13 @@ The sample output can be found in the `sample_output.tsv` file.
 
 ### Formatting input files:
 
-The input list of peptides or PSMs should be formatted as below:
+There are no strict requirements at formatting the input file. However, the file should always contain a unique identifier for each line (i.e., each peptide or PSM), and the peptide sequence. Columns containing the identifiers of corresponding proteins, and positions of the peptides within the protein sequence are optional. Note, however, that inferring the protein IDs from the full FASTA file is computationally expensive and will be slow.
+
+Below is an example of an input file with complete information:
 ```
 ID	Sequence	Proteins	Positions
-pep_fc539	GYEDGGIHLECRSTGWYPQPQIQWSDAK	prot_8489;prot_2c867;prot_4293a;prot_4e288	155;132;113;113
-pep_1e5ccd	NYWGSVRR	prot_1003	632
-```
-The script in `src/format_input.py` can convert any tab- or comma-separated file into the expected format. The script expects the _pandas_, _argparse_, and _tqdm_ libraries (included in the Conda environment in `condaenv.yaml`), and accepts the following arguments:
-
-* `-i`: Input file name (relative or full path)
-* `-sep`: Input file separator (default: tab)
-* `-f`: FASTA file created by ProHap (full or simplified format)
-* `-o`: Output file name (relative or full path)
-* `-t`: Number of threads (default: 5)
-* `-sc`: Sequence column name (default: "sequence")
-* `-id`: ID column name (default: ignore, use line number as unique identifier)
-* `-pc`: Protein accessions column name, expecting values separated by colon or semicolon (defualt: ignore, find peptides in the FASTA entries - can be slow)
-* `-pos`: Position of peptides within proteins, expecting values separated by colon or semicolon (defualt: ignore, find peptides in the FASTA entries - can be slow)
-
-A provided example shows a simulated output file of [Percolator](http://percolator.ms/) in `sample_data/sample_percolator_output.tsv`. To format this example file, run the following command: 
-```
-python src/format_input.py -i sample_data/sample_percolator_output.tsv -f sample_data/sample_proteins.fa -sc peptide -id PSMId -pc proteinIds -t 2 -o <path/to/output_file>
+pep_fc539	K.GYEDGGLHLEC[57.0215]RSTGWYPQPQLQWSDAK.G	prot_8489;prot_2c867;prot_4293a;prot_4e288	155;132;113;113
+pep_1e5ccd	K.NYWGSVRR.T	prot_1003	632
 ```
 
 ## Annotation output
