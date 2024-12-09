@@ -205,7 +205,7 @@ def process_row(index):
 
     fasta_accessions = re.split(r"[,;]", row['Proteins'])   # all the accessions of candidate proteins
     peptide_length = len(row['Sequence'])                   # length of the peptide sequence
-    fasta_peptide_starts = [ int(pos) for pos in re.split(r"[,;]", row['Positions']) ]    # positions of the peptide within respective candidate protein 
+    fasta_peptide_starts = [ int(pos) for pos in re.split(r"[,;]", str(row['Positions'])) ]    # positions of the peptide within respective candidate protein 
 
     # concentrate all matching proteins (haplotype or stable protein ids)
     matching_proteins = []
