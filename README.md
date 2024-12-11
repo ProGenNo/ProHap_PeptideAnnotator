@@ -6,6 +6,8 @@ Pipeline to annotate peptide identifications when using protein databases made b
 
 The pipeline requires Snakemake and Conda installed. You can install these following [this guide](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html), _Installation via Conda/Mamba_. 
 
+If using the Peptide Annotator in your publication, please cite: Vašíček, J., Kuznetsova, K.G., Skiadopoulou, D. et al. ProHap enables human proteomic database generation accounting for population diversity. _Nat Methods_ (2024). [https://doi.org/10.1038/s41592-024-02506-0](https://doi.org/10.1038/s41592-024-02506-0)
+
 ### Steps to annotate a list of PSMs:
 
 1. Format your PSMs or peptides in a tab-separated file as described below
