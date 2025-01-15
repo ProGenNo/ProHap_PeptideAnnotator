@@ -58,7 +58,7 @@ rule format_input:
     conda: "condaenv.yaml"
     shell:
         "mkdir -p data ; python src/format_input.py -i {input.pep} -f {input.fasta_file} -id {params.id_col} -sc {params.seq_col} " +
-        ("-s {params.sep} " if (config['sep'] != "\t") else "") +
+        ("-sep {params.sep} " if (config['sep'] != "\t") else "") +
         ("-pc {params.prot_col} " if (len(config['prot_col']) > 0) else "") +
         ("-pos {params.pos_col} " if (len(config['pos_col']) > 0) else "") +
         "-t {params.max_cores} -removed {output.log} -o {output.pep}"    
@@ -102,6 +102,7 @@ rule join_output:
     conda: "condaenv.yaml"
     shell:
         "python src/join_reports.py -orig {input.orig} -annot {input.annot} -id {params.id_col} " +
+        ("-sep {params.sep} " if (config['sep'] != "\t") else "") +
         ("-pc {params.prot_col} " if (len(config['prot_col']) > 0) else "") +
         ("-pos {params.pos_col} " if (len(config['pos_col']) > 0) else "") +
         "-o {output}"
