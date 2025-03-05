@@ -70,8 +70,9 @@ The peptide annotation pipeline produces a tab-separated file containing the fol
 
 - `ID`: Identifier matching the input file
 - `sequence`: Amino acid sequence of the peptide
+- `possible_contaminant`: Is any of the matching proteins a contaminant? 
 - `pep_type1`: Peptide classification based on the influence of genetic variation. The possible values are:
-    - _contaminant_: peptide matches a contaminant sequence and should be removed from further analysis
+    - _contaminant_: peptide matches only contaminant sequences and should be removed from further analysis
     - _canonical_: peptide matches a canonical sequence in Ensembl, without the influence of any genetic variation
     - _single-variant_: peptide contains the product of the alternative allele for one genetic variant
     - _multi-variant_: peptide contains the product of the alternative allele for a set of two or more genetic variants
