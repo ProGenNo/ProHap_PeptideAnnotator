@@ -50,6 +50,7 @@ psm_count = len(psm_df)
 
 # remove PTMs and other characters (e.g., the N-terminal, charge state)
 # special condition for Percolator format to remove the residues before and after peptide (e.g., M.n[+42.021]PEPTIDEK2.P -> PEPTIDEK)
+# TODO: remove round brackets as well, or alternatively, keep just the capital letters
 psm_df[args.seq_col] = psm_df[args.seq_col].apply(lambda seq: re.sub(r'\[[^]]*\]|\d', '', seq).split('.')[1].replace('n', '').replace('I', 'L') if (seq[1] == '.') else re.sub(r'\[[^]]*\]', '', seq).replace('I', 'L') )
 
 unique_peptides = psm_df.drop_duplicates(subset=[args.seq_col])
@@ -97,7 +98,7 @@ with Pool(args.threads) as p:
     removed_outfile = open(args.removed_output_file, 'w')
     removed_outfile.write('------------' + '[' + datetime.now().strftime('%X %x') + '] file: ' + args.input_file + ' ------------\nRemoved peptides:\n')
     for index,row in result_df[result_df['Proteins'] == '-'].iterrows():
-        removed_outfile.write(row['ID'] + ': ' + row['Sequence'] + '\n')
+        removed_outfile.write((row[args.id_col] if (args.id_col is not None) else 'pep_' + hex(index)[2:]) + ': ' + row[args.seq_col] + '\n')
     removed_outfile.close()
     
     # Remove peptides that do not match any protein in the provided FASTA

@@ -257,7 +257,7 @@ def process_row(index):
         # Store the ENST ID for matching transcripts
         matching_protein_positions = [ matching_protein_positions[idx] for idx,prot_id in enumerate(matching_proteins) if not (prot_id.startswith(args.manual_prefix) or prot_id.startswith(args.var_prefix) or prot_id.startswith(args.haplo_prefix)) ]
         matching_proteins = [ prot_id for idx,prot_id in enumerate(matching_proteins) if not (prot_id.startswith(args.manual_prefix) or prot_id.startswith(args.var_prefix) or prot_id.startswith(args.haplo_prefix)) ]
-        matching_transcripts = [ prot_id for idx,prot_id in enumerate(matching_proteins) if prot_id.startswith('ENST') ]
+        matching_transcripts = [ prot_id if prot_id.startswith('ENST') else '-' for idx,prot_id in enumerate(matching_proteins) ]
 
         # get gene IDs only for canonical matches (by ENST -> ENSG)
         matching_genes = [ annotations_db[trID.split('.', 1)[0]].attributes['gene_id'][0] for trID in matching_transcripts ]
@@ -279,10 +279,16 @@ def process_row(index):
             pep_type2 = 'multi-gene'
 
         dna_alleles = []
+        
         for idx,trID in enumerate(matching_transcripts):
+            if (trID == '-'):
+                continue    # contaminant
+
             transcript_alleles = check_ref_alleles(trID.split('.',1)[0], matching_protein_positions[idx], row['Sequence'], True)
+
             if (len(transcript_alleles) > 0):
                 dna_alleles.append(';'.join(transcript_alleles))
+
         dna_alleles = list(dict.fromkeys(dna_alleles))
 
         return [row['ID'], row['Sequence'], possible_contaminant, 'canonical', pep_type2, '-', '-', '|'.join(dna_alleles) if (len(dna_alleles) > 0) else '-', ';'.join(matching_proteins), ';'.join(matching_transcripts), ';'.join(matching_genes), ';'.join(gene_names), ';'.join([str(pos) for pos in matching_protein_positions]), '-', '-', '-']
@@ -302,6 +308,10 @@ def process_row(index):
     found_variant = False
 
     for i,protID in enumerate(matching_proteins):
+        if (reading_frames[i] == '-'):
+            # contaminant match - ignore
+            continue
+
         reading_frame = int(reading_frames[i])
 
         # check for proteins that were added manually and don't have associated metadata
