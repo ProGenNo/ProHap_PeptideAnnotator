@@ -61,7 +61,7 @@ Below is an example of an input file with complete information:
 ```
 ID	Sequence	Proteins	Positions
 pep_fc539	K.GYEDGGLHLEC[57.0215]RSTGWYPQPQLQWSDAK.G	prot_8489;prot_2c867;prot_4293a;prot_4e288	155;132;113;113
-pep_1e5ccd	K.NYWGSVRR.T	prot_1003	632
+pep_1e5ccd	NYWGSVRR	prot_1003	632
 ```
 
 ## Annotation output
