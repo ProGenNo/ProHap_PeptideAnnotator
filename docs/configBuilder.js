@@ -1,4 +1,4 @@
-function getConfigHTML(ensembl_release, max_cores, haplo_table, var_table, final_FASTA, fasta_header, input_file, ID_col, seq_col, prot_col, pos_col, sep, output_file) {
+function getConfigHTML(ensembl_release, max_cores, haplo_table, var_table, final_FASTA, fasta_header, input_file, ID_col, seq_col, prot_col, pos_col, decoy_col, decoy_val, sep, output_file) {
     return "<p>" +
     "# ---------------- General config ----------------<br>" +
     "ensembl_release: " + ensembl_release + "<br>" +
@@ -15,6 +15,8 @@ function getConfigHTML(ensembl_release, max_cores, haplo_table, var_table, final
     "seq_col: \"" + seq_col + "\"<br>" + 
     "prot_col: \"" + prot_col + "\"<br>" + 
     "pos_col: \"" + pos_col + "\"<br>" +
+    "decoy_col: \"" + decoy_col + "\"<br>" +
+    "decoy_val: \"" + decoy_val + "\"<br>" +
     "sep: \"" + sep + "\"<br>" +
     "<\p>"
 }

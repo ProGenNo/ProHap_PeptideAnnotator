@@ -30,6 +30,12 @@ parser.add_argument("-pc", dest="prot_col", required=False,
 parser.add_argument("-pos", dest="pos_col", required=False,
                     help="position column name (default: N/A (infer))", default=None)
 
+parser.add_argument("-dc", dest="decoy_col", required=False,
+                    help="If the input file contains decoy peptides, specify the column that distingushes them from target peptides (e.g., 'Decoy' in DIA-NN 2.0).", default=None)
+
+parser.add_argument("-dv", dest="decoy_val", required=False,
+                    help="If the input file contains decoy peptides, specify the corresponding value in the decoy column.", default=None)
+
 parser.add_argument("-t", dest="threads", type=int, required=False,
                     help="maximum number of threads (default: 5)", default=5)
 
@@ -50,8 +56,14 @@ psm_count = len(psm_df)
 
 # remove PTMs and other characters (e.g., the N-terminal, charge state)
 # special condition for Percolator format to remove the residues before and after peptide (e.g., M.n[+42.021]PEPTIDEK2.P -> PEPTIDEK)
-# TODO: remove round brackets as well, or alternatively, keep just the capital letters
-psm_df[args.seq_col] = psm_df[args.seq_col].apply(lambda seq: re.sub(r'\[[^]]*\]|\d', '', seq).split('.')[1].replace('n', '').replace('I', 'L') if (seq[1] == '.') else re.sub(r'\[[^]]*\]', '', seq).replace('I', 'L') )
+def format_peptide(orig_seq):
+    return ''.join(             
+        re.findall('[A-Z]+',
+            re.sub(r'\[[^]]*\]|\d', '', orig_seq).split('.')[1].replace('n', '').replace('I', 'L') if (orig_seq[1] == '.') else re.sub(r'\[[^]]*\]', '', orig_seq).replace('I', 'L')
+        )
+    )
+
+psm_df[args.seq_col] = psm_df[args.seq_col].apply(lambda seq: format_peptide(seq)) 
 
 unique_peptides = psm_df.drop_duplicates(subset=[args.seq_col])
 
@@ -76,11 +88,18 @@ def find_peptide(idx):
                 result_prots.append(prot['accession'])
                 result_pos.append(str(prot['sequence'].replace('I', 'L').index(seq)))
 
-    return [seq, ';'.join(result_prots) if (len(result_prots) > 0) else (row[args.prot_col] if (args.prot_col is not None) else '-'), ';'.join(result_pos) if (len(result_prots) > 0) else -1]
+    is_decoy = False
+    if (args.decoy_col is not None):
+        if (args.decoy_val is None):
+            raise ValueError("Provide a vaild decoy label value.")
+        
+        is_decoy = (str(row[args.decoy_col]) == str(args.decoy_val))
+
+    return [seq, ';'.join(result_prots) if (len(result_prots) > 0) else (row[args.prot_col] if (args.prot_col is not None) else '-'), ';'.join(result_pos) if (len(result_prots) > 0) else -1, is_decoy]
 
 with Pool(args.threads) as p:
     pep_map_data = list(tqdm(p.imap_unordered(find_peptide, range(0, len(unique_peptides))), total=len(unique_peptides)))
-    pep_map = pd.DataFrame(data=pep_map_data, columns=['seq', 'proteins', 'positions']).set_index('seq')
+    pep_map = pd.DataFrame(data=pep_map_data, columns=['seq', 'proteins', 'positions', 'is_decoy']).set_index('seq')
 
     p.close()
     p.join()
@@ -90,10 +109,10 @@ with Pool(args.threads) as p:
     for index,row in psm_df.iterrows():
         seq = row[args.seq_col]
         pept_mapped = pep_map.loc[seq]
-        result_data.append([row[args.id_col] if (args.id_col is not None) else 'pep_' + hex(index)[2:], seq, pept_mapped['proteins'], pept_mapped['positions']])
+        result_data.append([row[args.id_col] if (args.id_col is not None) else 'pep_' + hex(index)[2:], seq, pept_mapped['proteins'], pept_mapped['positions'], int(pept_mapped['is_decoy'])])
 
     # result_data = list(tqdm(p.imap_unordered(find_peptide, range(0, len(psm_df))), total=len(psm_df)))
-    result_df = pd.DataFrame(data=result_data, columns=['ID', 'Sequence', 'Proteins', 'Positions'])
+    result_df = pd.DataFrame(data=result_data, columns=['ID', 'Sequence', 'Proteins', 'Positions', 'Decoy'])
 
     removed_outfile = open(args.removed_output_file, 'w')
     removed_outfile.write('------------' + '[' + datetime.now().strftime('%X %x') + '] file: ' + args.input_file + ' ------------\nRemoved peptides:\n')

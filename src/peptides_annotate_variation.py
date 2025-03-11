@@ -32,6 +32,12 @@ parser.add_argument("-var_prefix", dest="var_prefix", required=False,
 parser.add_argument("-manual_prefix", dest="manual_prefix", required=False,
                     help="prefix for manually added protein sequences (default: 'man_')", default='man_')
 
+parser.add_argument("-decoy_col", dest="decoy_col", required=False,
+                    help="If the input file contains decoy peptides, specify the column that distingushes them from target peptides (e.g., 'Decoy' in DIA-NN 2.0).", default=None)
+
+parser.add_argument("-decoy_val", dest="decoy_val", required=False,
+                    help="If the input file contains decoy peptides, specify the corresponding value in the decoy column.", default=None)
+
 parser.add_argument("-ens_annot", dest="annotation_db", required=True,
                     help="DB file created by gffutils from Ensembl GTF")
 
@@ -207,11 +213,20 @@ def process_row(index):
     peptide_length = len(row['Sequence'])                   # length of the peptide sequence
     fasta_peptide_starts = [ int(pos) for pos in re.split(r"[,;]", str(row['Positions'])) ]    # positions of the peptide within respective candidate protein 
 
+    # decoy match - labelled as decoy
+    if (args.decoy_col is not None):
+        if (str(row[args.decoy_col]) == str(args.decoy_val)):
+            return [row['ID'], row['Sequence'], False, 'decoy', 'decoy', '-', '-', '-', ';'.join(fasta_accessions), '-', '-', '-', ';'.join([str(pos) for pos in fasta_peptide_starts]), '-', '-', '-']
+
     # concentrate all matching proteins (haplotype or stable protein ids)
     matching_proteins = []
     matching_transcripts = []
     reading_frames = []
     matching_protein_positions = []
+
+    # Are any of the matching proteins contaminants? Determine below
+    # Sometimes, contaminant sequences are also valid human proteins, and we want to keep those
+    contaminant_matches = []
 
     # process matching fasta entries
     for i,fastaID in enumerate(fasta_accessions):
@@ -219,11 +234,19 @@ def process_row(index):
         matching_seq_proteins = fasta_entry['matching_proteins']    # IDs of matching protein sequences (before splitting by start and stop codons)
         prot_reading_frames = fasta_entry['reading_frames']         # RFs of matching protein sequences (known only for haplotypes)
         matching_seq_positions = fasta_entry['seq_positions']       # Positions of protein sub-sequences in the complete protein (after splitting by start and stop codons)
+        entry_is_contam = ('cont' in fasta_entry['tag'])            # At least one of the matching proteins is a contaminant
 
         for j,prot_ids in enumerate(matching_seq_proteins):
             for k,prot_id in enumerate(prot_ids):         
                 if prot_id.startswith('ENST'):
-                    prot_id = prot_id.split('_', 1)[0]                 
+                    prot_id = prot_id.split('_', 1)[0]
+
+                # mark if this protein is actually a contaminant
+                # i.e., sequence is not a canonical Ensembl identifier, or one of ProHap's or manually added accession formats
+                if entry_is_contam:
+                    contaminant_matches.append(not (prot_id.startswith('ENST') or prot_id.startswith(args.manual_prefix) or prot_id.startswith(args.var_prefix) or prot_id.startswith(args.haplo_prefix)))
+                else:
+                    contaminant_matches.append(False)
 
                 matching_proteins.append(prot_id)                   # Store protein ID
                 reading_frames.append(prot_reading_frames[j][k])    # Corresponding RF
@@ -238,15 +261,14 @@ def process_row(index):
     pep_type2 = ''  # type by specificity (proteoform- x protein-specific x multi-gene)
 
     # crap match = all matching sequences are a contaminant
-    contaminant_matches = [ 'cont' in fasta_entries[fastaID]['tag'] for fastaID in fasta_accessions ]
-    possible_contaminant = any(contaminant_matches)     # is any of the proteins a contaminant sequence?
     only_contaminant = all(contaminant_matches)         # are all of the proteins contaminants?
-
     if only_contaminant:
         return [row['ID'], row['Sequence'], True, 'contaminant', 'contaminant', '-', '-', '-', ';'.join(matching_proteins), '-', '-', '-', ';'.join([str(pos) for pos in matching_protein_positions]), '-', '-', '-']
 
+    possible_contaminant = any(contaminant_matches)     # is any of the proteins a contaminant sequence?
+
     # canonical peptide = any of the matching sequences is a canonical protein
-    is_canonical = any([ 'ref' in fasta_entries[fastaID]['tag'] for fastaID in fasta_accessions ])
+    is_canonical = any([ prot_id.startswith('ENST') for prot_id in matching_proteins ])
     if is_canonical:
         # if the canonical peptides matches a few haplotypes and one canonical sequence, it should still be protein-specific and not proteoform-specific
         # check this first before filtering the matching protein IDs

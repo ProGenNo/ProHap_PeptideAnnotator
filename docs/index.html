@@ -96,6 +96,16 @@
                         <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the positions of the first amino acid within each of the proteins listed in the protein column, indexed from 0, separated by semicolon. If left blank, the peptide positions will be inferred from the FASTA file.">(?)</span>
                         <input type="text" class="form-control" name="Pos-column" id="Pos-column" required="required" aria-required="true">
                     </div>
+                    <div class="col-md-3">
+                        <label for="Pos-column">Decoy column</label>
+                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the label distinguishing target and decoy peptides. Leave this field blank if decoys are not reported.">(?)</span>
+                        <input type="text" class="form-control" name="Dec-column" id="Dec-column" required="required" aria-required="true">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="Pos-column">Decoy label</label>
+                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Value of the label denoting a decoy peptide. Leave blank if decoys are not reported.">(?)</span>
+                        <input type="text" class="form-control" name="Dec-value" id="Dec-value" required="required" aria-required="true">
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-1">
@@ -128,8 +138,9 @@
     </div>
     <hr class="mb-3 mt-3">
     <div class="mb-3">
+        <span>Check that no fields below are labbeled as MISSING and </span>
         <button onclick="download('config.yaml')">Download</button>
-        <span>or copy the content below to your config.yaml file:</span>
+        <span>or copy the content to your config.yaml file:</span>
     </div>
     <div class="row">
         <div class="col" id="config-content">            
@@ -228,22 +239,24 @@
         const seq_col = evt.currentTarget[11].value.length > 0 ? evt.currentTarget[11].value : "MISSING"
         const prot_col = evt.currentTarget[12].value
         const pos_col = evt.currentTarget[13].value
+        const dec_col = evt.currentTarget[14].value
+        const dec_val = evt.currentTarget[15].value
 
         let sep = ""
-        if (evt.currentTarget[14].checked) {
+        if (evt.currentTarget[16].checked) {
             d3.select("#sep-other").attr("disabled", true)
             sep = '\\t'
-        } else if (evt.currentTarget[15].checked) {
+        } else if (evt.currentTarget[17].checked) {
             d3.select("#sep-other").attr("disabled", true)
             sep = ','
         } else {
             d3.select("#sep-other").attr("disabled", null)
-            sep = evt.currentTarget[17].value
+            sep = evt.currentTarget[18].value
         }
 
-        const output_file = evt.currentTarget[18].value.length > 0 ? evt.currentTarget[18].value : "MISSING"
+        const output_file = evt.currentTarget[19].value.length > 0 ? evt.currentTarget[19].value : "MISSING"
 
-        config_html = getConfigHTML(ensembl_release, max_cores, haplo_table, var_table, final_FASTA, fasta_header, input_file, ID_col, seq_col, prot_col, pos_col, sep, output_file)
+        config_html = getConfigHTML(ensembl_release, max_cores, haplo_table, var_table, final_FASTA, fasta_header, input_file, ID_col, seq_col, prot_col, pos_col, dec_col, dec_val, sep, output_file)
         update_config_text()    
     })
 </script>

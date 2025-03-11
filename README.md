@@ -40,11 +40,12 @@ The sample output can be found in the `sample_output.tsv` file.
 
 ### Required files:
 
-1. List of PSMs or peptides in a tab-separated file having the following four columns (additional columns do not matter):
+1. List of PSMs or peptides in a comma- or tab-separated file having the following four columns (additional columns do not matter):
     - `ID`: Unique identifier for the PSM / peptide
     - `Sequence`: Amino acid sequence of the peptide - if modifications and/or residues before and after are included, they will be ignored (e.g., "M.n[+42.021]PEPTIDEK2.A" will be understood as "PEPTIDEK").
     - `Proteins`: List of protein accessions matching the concatenated FASTA file (e.g., `prot_123ab`), separated by semicolon (optional)
     - `Positions`: Positions of the first amino acid within the proteins above \(indexed from 0\), separated by semicolon (optional)
+    - `Decoy`: Label distinguishing target and decoy peptides. Provide the decoy value \(e.g., "1" or "decoy"\) as an argument. (optional)
 2. Haplotype table provided by ProHap (if used)
     - If using one of the publicly available ProHap databases, the haplotype table file is provided as the _F2_ file.
 3. Variant table provided by ProVar (if used)
@@ -72,6 +73,7 @@ The peptide annotation pipeline produces a tab-separated file containing the fol
 - `sequence`: Amino acid sequence of the peptide
 - `possible_contaminant`: Is any of the matching proteins a contaminant? 
 - `pep_type1`: Peptide classification based on the influence of genetic variation. The possible values are:
+    - _decoy_: peptide matches only decoy sequences and should be removed from further analysis
     - _contaminant_: peptide matches only contaminant sequences and should be removed from further analysis
     - _canonical_: peptide matches a canonical sequence in Ensembl, without the influence of any genetic variation
     - _single-variant_: peptide contains the product of the alternative allele for one genetic variant
@@ -80,7 +82,8 @@ The peptide annotation pipeline produces a tab-separated file containing the fol
     - _variant-no-ref_: Peptide contains the product of the alternative allele for at least one genetic variant. However, the corresponding canonical sequence has not been found in the Ensembl canonical proteome. The peptide should be checked manually.
     - _canonical-no-ref_: Peptide does not cover a product of an alternative allele. However, the sequence has not been found in the Ensembl canonical proteome. The peptide should be checked manually.
 - `pep_type2`: Peptide classification based on its ability to distinguish between protein sequences. The possible values are:
-    - _contaminant_: peptide matches a contaminant sequence and should be removed from further analysis
+    - _decoy_: peptide matches only decoy sequences and should be removed from further analysis
+    - _contaminant_: peptide matches only contaminant sequences and should be removed from further analysis
     - _proteoform-specific_: maps uniquely to a single form of a protein (i.e., single splice variant and haplotype)
     - _protein-specific_: maps to multiple sequences, which are all products of the same gene
     - _multi-gene_: maps to the products of different genes

@@ -57,11 +57,12 @@ rule format_input:
     threads: config['max_cores']
     conda: "condaenv.yaml"
     shell:
-        "mkdir -p data ; python src/format_input.py -i {input.pep} -f {input.fasta_file} -id {params.id_col} -sc {params.seq_col} " +
+        "mkdir -p data ; python src/format_input.py -i \"{input.pep}\" -f \"{input.fasta_file}\" -id {params.id_col} -sc {params.seq_col} " +
         ("-sep {params.sep} " if (config['sep'] != "\t") else "") +
         ("-pc {params.prot_col} " if (len(config['prot_col']) > 0) else "") +
         ("-pos {params.pos_col} " if (len(config['pos_col']) > 0) else "") +
-        "-t {params.max_cores} -removed {output.log} -o {output.pep}"    
+        (("-dc \"" + str(config['decoy_col']) + "\" -dv " + str(config['decoy_val']) + " ") if (len(config["decoy_col"]) > 0) else "") +
+        "-t {params.max_cores} -removed \"{output.log}\" -o \"{output.pep}\""    
 
 rule annotate_peptides:
     input:
@@ -79,14 +80,14 @@ rule annotate_peptides:
         haplotype_prefix="haplo_",
         max_cores=config['max_cores'],
         log_file=".".join(config['output_file'].split('.')[:-1]) + '_PeptideAnnotator_log.txt',
-        header_arg=("-fh " + config['fasta_header']) if len(config["fasta_header"]) else ""
+        header_arg=("-fh \"" + config['fasta_header'] + '\"') if len(config["fasta_header"]) else ""
     threads: config['max_cores']
     conda: "condaenv.yaml"
     shell:
         "python src/peptides_annotate_variation.py -i {input.pep} " +
-        ("-var_tsv {input.var_db} -var_prefix {params.variant_prefix} " if (len(config["var_db_table"]) > 0) else "") +
-        ("-hap_tsv {input.haplo_db} -hap_prefix {params.haplotype_prefix} " if (len(config["haplo_db_table"]) > 0) else "") +
-        "-log {params.log_file} -ens_annot {input.annot_db} -f {input.fasta_file} {params.header_arg} -ref_fa {input.ref_fasta} -t {params.max_cores} -o {output}; "
+        ("-var_tsv \"{input.var_db}\" -var_prefix {params.variant_prefix} " if (len(config["var_db_table"]) > 0) else "") +
+        ("-hap_tsv \"{input.haplo_db}\" -hap_prefix {params.haplotype_prefix} " if (len(config["haplo_db_table"]) > 0) else "") +
+        "-decoy_col \"Decoy\" -decoy_val 1 -log \"{params.log_file}\" -ens_annot \"{input.annot_db}\" -f \"{input.fasta_file}\" {params.header_arg} -ref_fa \"{input.ref_fasta}\" -t {params.max_cores} -o \"{output}\"; "
 
 rule join_output:
     input:
@@ -101,8 +102,8 @@ rule join_output:
         sep=config['sep']    
     conda: "condaenv.yaml"
     shell:
-        "python src/join_reports.py -orig {input.orig} -annot {input.annot} -id {params.id_col} " +
-        ("-sep {params.sep} " if (config['sep'] != "\t") else "") +
-        ("-pc {params.prot_col} " if (len(config['prot_col']) > 0) else "") +
-        ("-pos {params.pos_col} " if (len(config['pos_col']) > 0) else "") +
-        "-o {output}"
+        "python src/join_reports.py -orig \"{input.orig}\" -annot \"{input.annot}\" -id \"{params.id_col}\" " +
+        ("-sep \"{params.sep}\" " if (config['sep'] != "\t") else "") +
+        ("-pc \"{params.prot_col}\" " if (len(config['prot_col']) > 0) else "") +
+        ("-pos \"{params.pos_col}\" " if (len(config['pos_col']) > 0) else "") +
+        "-o \"{output}\""
