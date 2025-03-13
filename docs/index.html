@@ -75,40 +75,46 @@
                 <div>
                     <h5 class="mb-2">Input format</h5>
                 </div>
-                <div class="row mb-2">
+                <div class="row mb-1">
                     <div class="col-md-3">
                         <label for="ID-column">ID column</label>
-                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the unique identifier for the PSM / peptide">(?)</span>
                         <input type="text" class="form-control" name="ID-column" value="ID" id="ID-column" required="required" aria-required="true">
+                        <small class="form-text text-muted">Column containing the unique identifier for the PSM / peptide. This has to be unique per row.</small>
                     </div>
                     <div class="col-md-3">
                         <label for="Seq-column">Sequence column</label>
-                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the amino acid peptide sequence - if modifications and/or residues before and after are included, they will be ignored (e.g., 'M.n[+42.021]PEPTIDEK2.A' = 'PEPTIDEK').">(?)</span>
                         <input type="text" class="form-control" name="Seq-column" value="Sequence" id="Seq-column" required="required" aria-required="true">
+                        <small class="form-text text-muted">Column containing the amino acid peptide sequence - if modifications, etc. are included, they will be ignored, and we consider I = L (e.g., 'M.n[+42.021]PEPTIDEK2.A' = 'PEPTLDEK').</small>
                     </div>
                     <div class="col-md-3">
                         <label for="Prot-column">Protein column</label>
                         <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the list of protein accessions matching the concatenated FASTA file, separated by semicolon (e.g., 'prot_123ab;prot_234cd'). If left blank, the protein IDs will be inferred from the FASTA file. Please note that this is computationally expensive and will take time. If there are peptides that do not match any protein, they will be removed.">(?)</span>
                         <input type="text" class="form-control" name="Prot-column" value="" id="Prot-column" required="required" aria-required="true">
+                        <small class="form-text text-muted">Column containing the list of protein accessions matching the concatenated FASTA file, separated by semicolon (e.g., 'prot_123ab;prot_234cd'). If left blank, the protein IDs will be inferred from the FASTA file - note that this is computationally expensive and will take time.</small>
                     </div>
                     <div class="col-md-3">
                         <label for="Pos-column">Position column</label>
-                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the positions of the first amino acid within each of the proteins listed in the protein column, indexed from 0, separated by semicolon. If left blank, the peptide positions will be inferred from the FASTA file.">(?)</span>
                         <input type="text" class="form-control" name="Pos-column" id="Pos-column" required="required" aria-required="true">
+                        <small class="form-text text-muted">Column containing the positions of the first amino acid within each of the proteins listed in the protein column, indexed from 0, separated by semicolon. If left blank, the peptide positions will be inferred from the FASTA file.</small>
+
                     </div>
+                </div>
+                <div class="row mb-4">
                     <div class="col-md-3">
                         <label for="Pos-column">Decoy column</label>
-                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Column containing the label distinguishing target and decoy peptides. Leave this field blank if decoys are not reported.">(?)</span>
                         <input type="text" class="form-control" name="Dec-column" id="Dec-column" required="required" aria-required="true">
+                        <small class="form-text text-muted">Column containing the label distinguishing target and decoy peptides. Leave this field blank if decoys are not reported.</small>
+
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label for="Pos-column">Decoy label</label>
-                        <span class="text-muted question-help" data-toggle="tooltip" data-placement="top" title="Value of the label denoting a decoy peptide. Leave blank if decoys are not reported.">(?)</span>
-                        <input type="text" class="form-control" name="Dec-value" id="Dec-value" required="required" aria-required="true">
+                        <input type="text" class="form-control short-input" name="Dec-value" id="Dec-value" required="required" aria-required="true">
+                        <small class="form-text text-muted">Value of the label denoting a decoy peptide (e.g., "1" or "decoy"). Leave blank if decoys are not reported.</small>
+
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-sm-1">
+                    <div class="col-sm-3">
                         <legend class="col-form-label col-md-3 pt-0">Separator</legend>
                         <div class="d-block my-3">
                             <div class="form-check">
@@ -118,6 +124,10 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="separator-radio" id="separator-radio-2" value="default">
                                 <label class="form-check-label" for="separator-radio-2">Comma</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="separator-radio" id="separator-radio-2" value="default">
+                                <label class="form-check-label" for="separator-radio-2">Parquet file</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="separator-radio" id="separator-radio-3" value="default">
@@ -166,7 +176,7 @@
         background: #bbb;
     }
     .question-help {
-        cursor: pointer;
+        cursor: help;
     }
 </style>
 
@@ -180,7 +190,7 @@
         $('[data-toggle="tooltip"]').tooltip()
     })*/
 
-    config_html = getConfigHTML("110", "5", "MISSING", "", "MISSING", "MISSING", "MISSING", "ID", "Sequence", "", "", "\\t", "MISSING")
+    config_html = getConfigHTML("110", "5", "MISSING", "", "MISSING", "MISSING", "MISSING", "ID", "Sequence", "", "", "", "", "\\t", "MISSING")
 
     function update_config_text() {
         d3.select('#config-content').html(config_html)
@@ -249,12 +259,15 @@
         } else if (evt.currentTarget[17].checked) {
             d3.select("#sep-other").attr("disabled", true)
             sep = ','
+        } else if (evt.currentTarget[18].checked) {
+            d3.select("#sep-other").attr("disabled", true)
+            sep = 'parquet'
         } else {
             d3.select("#sep-other").attr("disabled", null)
-            sep = evt.currentTarget[18].value
+            sep = evt.currentTarget[20].value
         }
 
-        const output_file = evt.currentTarget[19].value.length > 0 ? evt.currentTarget[19].value : "MISSING"
+        const output_file = evt.currentTarget[21].value.length > 0 ? evt.currentTarget[21].value : "MISSING"
 
         config_html = getConfigHTML(ensembl_release, max_cores, haplo_table, var_table, final_FASTA, fasta_header, input_file, ID_col, seq_col, prot_col, pos_col, dec_col, dec_val, sep, output_file)
         update_config_text()    

@@ -51,7 +51,12 @@ print ("Reading", args.fasta_file)
 fasta_entries = read_fasta(args.fasta_file)
 
 print ("Reading", args.input_file)
-psm_df = pd.read_csv(args.input_file, sep=args.input_sep)
+psm_df = None
+if (args.input_sep == 'parquet'):
+    psm_df = pd.read_parquet(args.input_file)
+else:
+    psm_df = pd.read_csv(args.input_file, sep=args.input_sep)
+
 psm_count = len(psm_df)
 
 # remove PTMs and other characters (e.g., the N-terminal, charge state)

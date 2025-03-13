@@ -40,8 +40,8 @@ The sample output can be found in the `sample_output.tsv` file.
 
 ### Required files:
 
-1. List of PSMs or peptides in a comma- or tab-separated file having the following four columns (additional columns do not matter):
-    - `ID`: Unique identifier for the PSM / peptide
+1. List of PSMs or peptides in a comma- or tab-separated or .parquet file having the following four columns (additional columns do not matter):
+    - `ID`: Identifier for the PSM / peptide - has to be unique per row.
     - `Sequence`: Amino acid sequence of the peptide - if modifications and/or residues before and after are included, they will be ignored (e.g., "M.n[+42.021]PEPTIDEK2.A" will be understood as "PEPTIDEK").
     - `Proteins`: List of protein accessions matching the concatenated FASTA file (e.g., `prot_123ab`), separated by semicolon (optional)
     - `Positions`: Positions of the first amino acid within the proteins above \(indexed from 0\), separated by semicolon (optional)
@@ -70,7 +70,7 @@ pep_1e5ccd	NYWGSVRR	prot_1003	632
 The peptide annotation pipeline produces a tab-separated file containing the following columns:
 
 - `ID`: Identifier matching the input file
-- `sequence`: Amino acid sequence of the peptide
+- `sequence`: Amino acid sequence of the peptide. Note that all isoleucine (I) residues are reported as leucine (L).
 - `possible_contaminant`: Is any of the matching proteins a contaminant? 
 - `pep_type1`: Peptide classification based on the influence of genetic variation. The possible values are:
     - _decoy_: peptide matches only decoy sequences and should be removed from further analysis
