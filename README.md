@@ -42,7 +42,7 @@ The sample output can be found in the `sample_output.tsv` file.
 
 1. List of PSMs or peptides in a comma- or tab-separated or .parquet file having the following four columns (additional columns do not matter):
     - `ID`: Identifier for the PSM / peptide - has to be unique per row.
-    - `Sequence`: Amino acid sequence of the peptide - if modifications and/or residues before and after are included, they will be ignored (e.g., "M.n[+42.021]PEPTIDEK2.A" will be understood as "PEPTIDEK").
+    - `Sequence`: Amino acid sequence of the peptide - if modifications and/or residues before and after are included, they will be ignored, and we consider I = L (e.g., "M.n[+42.021]PEPTIDEK2.A" will be understood as "PEPTLDEK").
     - `Proteins`: List of protein accessions matching the concatenated FASTA file (e.g., `prot_123ab`), separated by semicolon (optional)
     - `Positions`: Positions of the first amino acid within the proteins above \(indexed from 0\), separated by semicolon (optional)
     - `Decoy`: Label distinguishing target and decoy peptides. Provide the decoy value \(e.g., "1" or "decoy"\) as an argument. (optional)
