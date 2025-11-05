@@ -45,7 +45,7 @@ parser.add_argument("-t", dest="threads", type=int, required=True,
                     help="maximum number of threads")
 
 parser.add_argument("-ref_fa", dest="ref_fasta", required=True,
-                    help="reference proteome (Ensembl) fasta file")                    
+                    help="reference proteome (Ensembl) fasta file")
 
 parser.add_argument("-f", dest="fasta_file", required=True,
                     help="fasta file")                
@@ -141,10 +141,9 @@ for trID in transcript_allele_locations:
     zipped.sort(key=lambda x: x[0])
     try:
         positions, alleles, uniq_alleles_DNA = zip(*zipped)
+        transcript_allele_locations[trID] = { 'pos': positions, 'allele': alleles, 'DNA': uniq_alleles_DNA }
     except:
         transcript_allele_locations[trID] = { 'pos': [], 'allele': [], 'DNA': [] }
-        continue
-    transcript_allele_locations[trID] = { 'pos': positions, 'allele': alleles, 'DNA': uniq_alleles_DNA }
 
 # Load the annotations database
 annotations_db = gffutils.FeatureDB(args.annotation_db)
@@ -383,8 +382,8 @@ def process_row(index):
 
                 # Sanity check: have we found the alternative allele in the peptide?
                 if found_allele != alt_prot_allele:
-                    log_file.write('peptide ' + row['ID'] + ' variant: ' + protID + ' expected: ' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:change_pep_loc[1]] + '\n')
-                    print('peptide ' + row['ID'] + ' variant: ' + protID + ' expected: ' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:change_pep_loc[1]])
+                    log_file.write('peptide ' + str(row['ID']) + ' variant: ' + protID + ' expected: ' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:change_pep_loc[1]] + '\n')
+                    print('peptide ' + str(row['ID']) + ' variant: ' + protID + ' expected: ' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:change_pep_loc[1]])
                 else:
                     # All looks ok -> store this change as identified
                     matching_protein_changes.append(parent_transcript + ':' + protein_change)
@@ -454,8 +453,8 @@ def process_row(index):
 
                     # Sanity check: have we found the alternative allele in the peptide?
                     if found_allele != alt_prot_allele:
-                        log_file.write('PSM ' + row['ID'] + ' haplotype:' + protID + ' expected:' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:] + '\n')
-                        print('PSM ' + row['ID'] + ' haplotype:' + protID + ' expected:' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:])
+                        log_file.write('peptide ' + str(row['ID']) + ' haplotype:' + protID + ' expected:' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:] + '\n')
+                        print('peptide ' + str(row['ID']) + ' haplotype:' + protID + ' expected:' + alt_prot_allele + ' found: ' + row['Sequence'][:change_pep_loc[0]] + ' ' + row['Sequence'][change_pep_loc[0]:])
                     else:
                         # All looks ok -> store this change as identified
                         haplo_matching_changes.append([change_pep_loc[0], ref_prot_allele, alt_prot_allele])
