@@ -460,7 +460,7 @@ def process_row(index):
                         haplo_matching_changes.append([change_pep_loc[0], ref_prot_allele, alt_prot_allele])
                         local_matching_changes_prot.append(ch)
                         local_matching_changes_pep.append(str(change_pep_loc[0]) + ':' + ref_prot_allele + '>' + alt_prot_allele)
-                        chromosome = protID.split('chr',1)[1].split('_',1)[0]
+                        chromosome = str(haplotype['chromosome'])
                         local_matching_alleles_DNA.append(chromosome + ':' + all_DNA_changes[j])
 
             haplo_has_canonical_alternative = check_canonical_peptide(row['Sequence'], haplo_matching_changes, parent_transcript)

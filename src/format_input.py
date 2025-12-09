@@ -122,7 +122,7 @@ with Pool(args.threads) as p:
     removed_outfile = open(args.removed_output_file, 'w')
     removed_outfile.write('------------' + '[' + datetime.now().strftime('%X %x') + '] file: ' + args.input_file + ' ------------\nRemoved peptides:\n')
     for index,row in result_df[result_df['Proteins'] == '-'].iterrows():
-        removed_outfile.write((str(row[args.id_col]) if (args.id_col is not None) else 'pep_' + hex(index)[2:]) + ': ' + str(row[args.seq_col]) + '\n')
+        removed_outfile.write((str(row[args.id_col]) if (args.id_col is not None) else 'pep_' + hex(index)[2:]) + ': ' + str(row['Sequence']) + '\n')
     removed_outfile.close()
     
     # Remove peptides that do not match any protein in the provided FASTA

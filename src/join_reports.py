@@ -26,7 +26,12 @@ parser.add_argument("-o", dest="output_file", required=True,
 
 args = parser.parse_args()
 
-df_orig = pd.read_csv(args.orig_file, sep=args.input_sep)
+df_orig = None 
+if (args.input_sep == 'parquet'):
+    df_orig = pd.read_parquet(args.orig_file)
+else:
+    df_orig = pd.read_csv(args.orig_file, sep=args.input_sep)
+
 df_annot = pd.read_table(args.annot_file)
 
 cols_to_drop = []
