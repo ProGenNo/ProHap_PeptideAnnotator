@@ -10,13 +10,12 @@ If using the Peptide Annotator in your publication, please cite: Vašíček, J.,
 
 ### Steps to annotate a list of PSMs:
 
-1. Format your PSMs or peptides in a tab-separated file as described below
-2. Clone the PeptideAnnotator repository: `git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git; cd ProHap_PeptideAnnotator`
-3. Create a new configuration file called `config.yaml` placed in the root of this repository (next to _Snakefile_) using [https://progenno.github.io/ProHap_PeptideAnnotator/](https://progenno.github.io/ProHap_PeptideAnnotator/), or based on the instructions in _config_example.yaml_
-4. Provide the path to the configuration file on line 2 of _Snakefile_
-5. Activate the Conda environment to run Snakemake: `conda activate snakemake`
-6. Test Snakemake with a dry-run: `snakemake -c1 -n -q`
-7. Run the Snakemake pipeline to perform the annotation, specifying the number of available CPU cores in the `--cores` parameter. E.g., when using 30 cores, run `snakemake --cores 30 -p --use-conda`
+1. Clone the PeptideAnnotator repository: `git clone https://github.com/ProGenNo/ProHap_PeptideAnnotator.git; cd ProHap_PeptideAnnotator`
+2. Create a new configuration file called `config.yaml` placed in the root of this repository (next to _Snakefile_) using [https://progenno.github.io/ProHap_PeptideAnnotator/](https://progenno.github.io/ProHap_PeptideAnnotator/), or based on the instructions in _config_example.yaml_
+3. Provide the path to the configuration file on line 2 of _Snakefile_
+4. Activate the Conda environment to run Snakemake: `conda activate snakemake`
+5. Test Snakemake with a dry-run: `snakemake -c1 -n -q`
+6. Run the Snakemake pipeline to perform the annotation, specifying the number of available CPU cores in the `--cores` parameter. E.g., when using 30 cores, run `snakemake --cores 30 -p --use-conda`
 
 ### Example
 
